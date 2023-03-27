@@ -26,8 +26,8 @@ export default function Viewer(props) {
       cornerstone.displayImage(element, image); // display the image on the canvas
 
       cornerstoneTools.init();
-      cornerstoneTools.addTool(ZoomTool);
-      cornerstoneTools.addTool(LengthTool);
+      cornerstoneTools.addToolForElement(element, ZoomTool);
+      cornerstoneTools.addToolForElement(element, LengthTool);
       cornerstoneTools.setToolActive("Zoom", {
         mouseButtonMask: 2,
         minScale: 0.25,
@@ -43,7 +43,7 @@ export default function Viewer(props) {
 
   return (
     <>
-      <h1>Cornerstone Viewer Test</h1>
+      <h1>Cornerstone Viewer</h1>
       <div className="viewer" ref={canvasRef}></div>
     </>
   );
