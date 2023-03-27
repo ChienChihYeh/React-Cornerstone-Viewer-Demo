@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import cornerstone from "cornerstone-core";
 import cornerstoneMath from "cornerstone-math";
 import cornerstoneWebImageLoader from "cornerstone-web-image-loader";
@@ -8,6 +8,9 @@ import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 
 export default function Viewer(props) {
+
+  const [loadTool, setLoadTool] = useState(null);
+
   const canvasRef = useRef(null);
   const imageId =
     "https://rawgit.com/cornerstonejs/cornerstoneWebImageLoader/master/examples/Renal_Cell_Carcinoma.jpg";
@@ -25,21 +28,28 @@ export default function Viewer(props) {
 
       cornerstone.displayImage(element, image); // display the image on the canvas
 
-      cornerstoneTools.init();
-      cornerstoneTools.addToolForElement(element, ZoomTool);
-      cornerstoneTools.addToolForElement(element, LengthTool);
-      cornerstoneTools.setToolActive("Zoom", {
-        mouseButtonMask: 2,
-        minScale: 0.25,
-        maxScale: 20.0,
-        preventZoomOutsideImage: true,
-      }); // activate ZoomTool with left mouse button
+      setLoadTool(true); // enable
 
-      cornerstoneTools.setToolActive("Length", {
-        mouseButtonMask: 1,
-      });
     });
   }, []);
+
+  useEffect(()=>{
+    const element = canvasRef.current;
+
+    cornerstoneTools.init();
+    cornerstoneTools.addToolForElement(element, ZoomTool);
+    cornerstoneTools.addToolForElement(element, LengthTool);
+    cornerstoneTools.setToolActive("Zoom", {
+      mouseButtonMask: 2,
+      minScale: 0.25,
+      maxScale: 20.0,
+      preventZoomOutsideImage: true,
+    }); // activate ZoomTool with left mouse button
+
+    cornerstoneTools.setToolActive("Length", {
+      mouseButtonMask: 1,
+    });
+  },[loadTool])
 
   return (
     <>
