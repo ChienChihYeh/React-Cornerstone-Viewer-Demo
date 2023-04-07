@@ -63,22 +63,6 @@ export default function DicomViewerScroll(props) {
     }
   };
 
-  // const handleMouseDown = (e) => {
-  //   if (e.button === 2) {
-  //     const element = canvasRef.current;
-  //     element.addEventListener("mousemove", handleMouseMove);
-  //   }
-  // };
-
-  // const handleMouseMove = (e) => {
-  //   const zoomToolState = cornerstoneTools.getToolState(element, "Zoom");
-  //   console.log(zoomToolState);
-  //   if (zoomToolState && zoomToolState.data.length > 0) {
-  //     const zoomScale = zoomToolState.data[0].scale;
-  //     console.log("Current Zoom Scale:", zoomScale);
-  //   }
-  // };
-
   useEffect(() => {
     const element = canvasRef.current;
     element.addEventListener("wheel", handleScroll);
