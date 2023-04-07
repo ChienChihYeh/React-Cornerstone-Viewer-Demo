@@ -10,6 +10,7 @@ import { ZoomTool, LengthTool } from "cornerstone-tools";
 
 export default function DicomViewerScroll(props) {
   const [loadTool, setLoadTool] = useState(false);
+  const [zooming, setZooming] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageIds, setImageIds] = useState([
     "wadouri:/dicom/0a9acd27-56abc647-fdf52ffc-05af8061-00b19e5a.dcm",
@@ -41,19 +42,23 @@ export default function DicomViewerScroll(props) {
 
   useEffect(() => {
     cornerstoneTools.init();
-    cornerstoneTools.addToolForElement(element, ZoomTool);
+    cornerstoneTools.addToolForElement(element, ZoomTool, {
+      configuration: {
+        invert: true,
+        preventZoomOutsideImage: false,
+        minScale: 0.7,
+        maxScale: 20.0,
+      },
+    });
     cornerstoneTools.addToolForElement(element, LengthTool);
     cornerstoneTools.setToolActive("Zoom", {
       mouseButtonMask: 2,
-      minScale: 1.0,
-      maxScale: 20.0,
-      preventZoomOutsideImage: true,
     });
 
     cornerstoneTools.setToolActive("Length", {
       mouseButtonMask: 1,
     });
-  }, [imageId, loadTool]);
+  }, [loadTool]);
 
   const handleScroll = (e) => {
     if (e.deltaY > 0 && currentImageIndex < imageIds.length - 1) {
@@ -75,7 +80,14 @@ export default function DicomViewerScroll(props) {
   return (
     <>
       <h1>Cornerstone Dicom Viewer</h1>
-      <div ref={canvasRef} className="viewer" />
+      <div
+        ref={canvasRef}
+        className="viewer"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          return false;
+        }}
+      />
       <div className="dicom-info">
         <p>Image Index: {currentImageIndex}</p>
         <p>Image ID: {imageIds[currentImageIndex]}</p>
