@@ -10,7 +10,6 @@ import { ZoomTool, LengthTool } from "cornerstone-tools";
 
 export default function DicomViewerScroll(props) {
   const [loadTool, setLoadTool] = useState(false);
-  const [zooming, setZooming] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageIds, setImageIds] = useState([
     "wadouri:/dicom/0a9acd27-56abc647-fdf52ffc-05af8061-00b19e5a.dcm",
