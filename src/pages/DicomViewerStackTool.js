@@ -93,9 +93,9 @@ export default function DicomViewerStackTool(props) {
     cornerstoneTools.addStackStateManager(element, ["stack"]);
     cornerstoneTools.addToolState(element, "stack", stack);
 
-    const StackScrollMouseWheelTool =
-      cornerstoneTools.StackScrollMouseWheelTool;
-    cornerstoneTools.addTool(StackScrollMouseWheelTool);
+    // const StackScrollMouseWheelTool =
+    //   cornerstoneTools.StackScrollMouseWheelTool;
+    // cornerstoneTools.addTool(StackScrollMouseWheelTool);
     // cornerstoneTools.setToolActive("StackScrollMouseWheel", {
     //   mouseButtonMask: 0x1,
     // });
@@ -141,6 +141,7 @@ export default function DicomViewerStackTool(props) {
     element.addEventListener("wheel", handleScroll);
 
     cornerstone.loadAndCacheImage(imageIds[currentSliceIndex]).then((image) => {
+      console.log("current slice: ", currentSliceIndex);
       cornerstone.displayImage(element, image);
     });
 
