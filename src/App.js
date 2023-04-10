@@ -5,6 +5,8 @@ import DicomViewer from "./pages/DicomViewer";
 import DicomViewerStack from "./pages/DicomViewerStack";
 import DicomViewerScroll from "./pages/DicomViewerScroll";
 import DicomViewerZoom from "./pages/DicomViewerZoom";
+import DicomViewerXY from "./pages/DicomViewerXY";
+import DicomViewerStackTool from "./pages/DicomViewerStackTool";
 
 function App() {
   return (
@@ -16,6 +18,11 @@ function App() {
         <Route path="/dicomviewerstack" element={<DicomViewerStack />} />
         <Route path="/dicomviewerscroll" element={<DicomViewerScroll />} />
         <Route path="/dicomviewerzoom" element={<DicomViewerZoom />} />
+        <Route path="/dicomviewerxy" element={<DicomViewerXY />} />
+        <Route
+          path="/dicomviewerstacktool"
+          element={<DicomViewerStackTool />}
+        />
       </Routes>
     </BrowserRouter>
   );
