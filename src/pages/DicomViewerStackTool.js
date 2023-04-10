@@ -41,13 +41,12 @@ export default function DicomViewerStackTool(props) {
     const element = canvasRef.current;
 
     cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
-      cornerstone.enable(element);
       cornerstone.displayImage(element, image);
 
       window.addEventListener("mouseup", (e) => {
         let viewport = cornerstone.getViewport(element);
         // console.log(viewport.scale);
-        if (viewport.scale <= 0.73) {
+        if (viewport.scale <= 0.7) {
           cornerstone.setViewport(element, {
             scale: 0.7,
             translation: {
@@ -75,7 +74,14 @@ export default function DicomViewerStackTool(props) {
         maxScale: 20.0,
       },
     });
-    cornerstoneTools.addToolForElement(element, LengthTool);
+    cornerstoneTools.addToolForElement(element, LengthTool, {
+      configuration: {
+        drawHandlesOnHover: true,
+        deleteIfHandleOutsideImage: true,
+        preventContextMenu: true,
+      },
+    });
+
     cornerstoneTools.setToolActive("Zoom", {
       mouseButtonMask: 2,
     });
@@ -87,13 +93,12 @@ export default function DicomViewerStackTool(props) {
     cornerstoneTools.addStackStateManager(element, ["stack"]);
     cornerstoneTools.addToolState(element, "stack", stack);
 
-    // Add our tool, and set it's mode
     const StackScrollMouseWheelTool =
       cornerstoneTools.StackScrollMouseWheelTool;
     cornerstoneTools.addTool(StackScrollMouseWheelTool);
-    cornerstoneTools.setToolActive("StackScrollMouseWheel", {
-      mouseButtonMask: 0x1,
-    });
+    // cornerstoneTools.setToolActive("StackScrollMouseWheel", {
+    //   mouseButtonMask: 0x1,
+    // });
 
     cornerstoneTools.setToolActive("Length", {
       mouseButtonMask: 1,
@@ -109,7 +114,7 @@ export default function DicomViewerStackTool(props) {
 
   // Event handler for mouse up event
   const handleMouseDrag = (e) => {
-    console.log(e.detail.buttons);
+    // console.log(e.detail.buttons);
     const coords = cornerstone.pageToPixel(
       element,
       e.detail.currentPoints.page.x,
@@ -134,6 +139,10 @@ export default function DicomViewerStackTool(props) {
   useEffect(() => {
     const element = canvasRef.current;
     element.addEventListener("wheel", handleScroll);
+
+    cornerstone.loadAndCacheImage(imageIds[currentSliceIndex]).then((image) => {
+      cornerstone.displayImage(element, image);
+    });
 
     return () => {
       element.removeEventListener("wheel", handleScroll);
