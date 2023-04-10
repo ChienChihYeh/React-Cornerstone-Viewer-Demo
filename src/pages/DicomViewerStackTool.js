@@ -28,21 +28,24 @@ export default function DicomViewerStackTool(props) {
 
   const canvasRef = useRef(null);
   const element = canvasRef.current;
-  //   const imageId = imageIds[currentImageIndex];
 
   useEffect(() => {
+    //initialize cornerstone
     cornerstoneTools.external.cornerstone = cornerstone;
     cornerstoneTools.external.cornerstoneMath = cornerstoneMath;
     cornerstoneTools.external.Hammer = Hammer;
 
+    //initialize dicom image loader/parser
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
     cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 
     const element = canvasRef.current;
 
+    //intial image loading
     cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
       cornerstone.displayImage(element, image);
 
+      //viewport reset
       window.addEventListener("mouseup", (e) => {
         let viewport = cornerstone.getViewport(element);
         // console.log(viewport.scale);
@@ -57,6 +60,7 @@ export default function DicomViewerStackTool(props) {
         }
       });
 
+      //load cornerstone tools after intial image loading, else they will not mount properly
       setLoadTool(true);
     });
   }, [imageIds]);
@@ -64,8 +68,8 @@ export default function DicomViewerStackTool(props) {
   useEffect(() => {
     const element = canvasRef.current;
     cornerstone.enable(element);
-
     cornerstoneTools.init();
+
     cornerstoneTools.addToolForElement(element, ZoomTool, {
       configuration: {
         invert: true,
@@ -81,7 +85,10 @@ export default function DicomViewerStackTool(props) {
         preventContextMenu: true,
       },
     });
+    cornerstoneTools.toolColors.setActiveColor("rgb(0, 255, 0)");
+    cornerstoneTools.toolColors.setToolColor("rgb(255, 255, 0)");
 
+    //tools have to be set active
     cornerstoneTools.setToolActive("Zoom", {
       mouseButtonMask: 2,
     });
@@ -104,15 +111,33 @@ export default function DicomViewerStackTool(props) {
       mouseButtonMask: 1,
     });
 
-    // Add event listener for left-click
+    // Add event listener for getting (x,y) from left-click drag
     element.addEventListener("cornerstonetoolsmousedrag", handleMouseDrag);
+
+    //remove length measurement
+    element.addEventListener("mousedown", (e) => {
+      // Get the tool state for the "length" tool
+      // console.log(e.which);
+
+      const toolState = cornerstoneTools.getToolState(element, "Length");
+
+      if (toolState && toolState.data) {
+        // Get the currently selected measurement
+        toolState.data.forEach((v, i) => {
+          if (v.active === true && e.which === 3) {
+            // console.log(i);
+            toolState.data.splice(i, 1);
+            cornerstone.updateImage(element);
+          }
+        });
+      }
+    });
 
     return () => {
       element.removeEventListener("cornerstonetoolsmousedrag", handleMouseDrag);
     };
   }, [loadTool]);
 
-  // Event handler for mouse up event
   const handleMouseDrag = (e) => {
     // console.log(e.detail.buttons);
     const coords = cornerstone.pageToPixel(
@@ -128,6 +153,7 @@ export default function DicomViewerStackTool(props) {
     }
   };
 
+  //change slice index
   const handleScroll = (e) => {
     if (e.deltaY > 0 && currentSliceIndex < imageIds.length - 1) {
       setCurrentSliceIndex(currentSliceIndex + 1);
@@ -136,6 +162,7 @@ export default function DicomViewerStackTool(props) {
     }
   };
 
+  //change displayed image by slice index
   useEffect(() => {
     const element = canvasRef.current;
     element.addEventListener("wheel", handleScroll);
@@ -160,12 +187,13 @@ export default function DicomViewerStackTool(props) {
           e.preventDefault();
           return false;
         }}
-      />
+      ></div>
       <div className="dicom-info">
         <p>Image Index: {currentSliceIndex}</p>
         <p>Image ID: {imageIds[currentSliceIndex]}</p>
         <p>
-          Coord During Dragging: &#40; {currentCoord.x} , {currentCoord.y} &#41;
+          Coord During Dragging:
+          {"( " + currentCoord.x + " , " + currentCoord.y + " )"}
         </p>
       </div>
     </>
