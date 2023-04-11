@@ -7,6 +7,7 @@ import DicomViewerScroll from "./pages/DicomViewerScroll";
 import DicomViewerZoom from "./pages/DicomViewerZoom";
 import DicomViewerXY from "./pages/DicomViewerXY";
 import DicomViewerStackTool from "./pages/DicomViewerStackTool";
+import DicomViewerAjax from "./pages/DicomViewerAjax";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           path="/dicomviewerstacktool"
           element={<DicomViewerStackTool />}
         />
+        <Route path="/dicomviewerajax" element={<DicomViewerAjax />} />
       </Routes>
     </BrowserRouter>
   );

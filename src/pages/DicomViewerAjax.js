@@ -7,17 +7,17 @@ import cornerstoneTools from "cornerstone-tools";
 import Hammer from "hammerjs";
 import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
+import axios from "axios";
 
-export default function DicomViewerStackTool(props) {
+//TODO: implement stack tool and move loading Image[currentSliceIndex] to seperate useEffect
+
+export default function DicomViewerAjax(props) {
   const [isRuler, setIsRuler] = useState(false);
   const [showCross, setShowCross] = useState(false);
+  const [loadImg, setLoadImg] = useState(false);
   const [loadTool, setLoadTool] = useState(false);
   const [currentSliceIndex, setCurrentSliceIndex] = useState(0);
-  const [imageIds, setImageIds] = useState([
-    "wadouri:/dicom/0a9acd27-56abc647-fdf52ffc-05af8061-00b19e5a.dcm",
-    "wadouri:/dicom/0af4de12-34c9d74e-5ea89ac4-ff484958-02b344c5.dcm",
-    "wadouri:/dicom/0afe7c0e-0f5f320d-a8a33a94-9de97e9d-c2444968.dcm",
-  ]);
+  const [imageIds, setImageIds] = useState([]);
   const [currentCoord, setCurrentCoord] = useState({
     x: 0,
     y: 0,
@@ -38,7 +38,15 @@ export default function DicomViewerStackTool(props) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    //initialize cornerstone
+    axios
+      .get("/json/data.json")
+      .then((response) => {
+        setImageIds(response.data);
+        setLoadImg(true);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
     cornerstoneTools.external.cornerstone = cornerstone;
     cornerstoneTools.external.cornerstoneMath = cornerstoneMath;
     cornerstoneTools.external.Hammer = Hammer;
@@ -47,64 +55,106 @@ export default function DicomViewerStackTool(props) {
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
     cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 
+    //initialize cornerstone
+    const element = canvasRef.current;
+    cornerstone.enable(element);
+  }, []);
+
+  useEffect(() => {
     const element = canvasRef.current;
 
-    //intial image loading
-    cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
-      cornerstone.displayImage(element, image);
-
-      //viewport reset
-      window.addEventListener("mouseup", (e) => {
-        let viewport = cornerstone.getViewport(element);
-        // console.log(viewport.scale);
-        if (viewport.scale <= 1) {
+    if (loadImg === true) {
+      //intial image loading
+      cornerstone
+        .loadAndCacheImage(imageIds[currentSliceIndex])
+        .then((image) => {
+          cornerstone.displayImage(element, image);
           cornerstone.setViewport(element, {
-            scale: 1,
+            scale: currentViewport.scale,
             translation: {
-              x: 0,
-              y: 0,
+              x: currentViewport.x,
+              y: currentViewport.y,
             },
           });
-          setCurrentViewport({
-            scale: 1,
-            x: 0,
-            y: 0,
+
+          //viewport reset
+          window.addEventListener("mouseup", (e) => {
+            let viewport = cornerstone.getViewport(element);
+            // console.log(viewport.scale);
+            if (viewport.scale <= 1) {
+              cornerstone.setViewport(element, {
+                scale: 1,
+                translation: {
+                  x: 0,
+                  y: 0,
+                },
+              });
+              setCurrentViewport({
+                scale: 1,
+                x: 0,
+                y: 0,
+              });
+            }
           });
-        }
-      });
 
-      const handleMouseEvent = (e) => {
-        let viewport = cornerstone.getViewport(element);
-        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+          const handleMouseEvent = (e) => {
+            let viewport = cornerstone.getViewport(element);
+            let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
 
-        let rect = element.getBoundingClientRect();
+            let rect = element.getBoundingClientRect();
 
-        let x = e.pageX - rect.left;
-        let y = e.pageY - rect.top;
+            let x = e.pageX - rect.left;
+            let y = e.pageY - rect.top;
 
-        setCurrentViewport({
-          scale: viewport.scale,
-          x: viewport.translation.x,
-          y: viewport.translation.y,
+            setCurrentViewport({
+              scale: viewport.scale,
+              x: viewport.translation.x,
+              y: viewport.translation.y,
+            });
+
+            setCurrentCoord({
+              x: x.toFixed(2),
+              y: y.toFixed(2),
+            });
+
+            setCurrentImgCoord({
+              x: imagePoint.x.toFixed(2),
+              y: imagePoint.y.toFixed(2),
+            });
+          };
+
+          element.addEventListener("mousemove", handleMouseEvent);
+
+          //change slice index
+          const handleScroll = (e) => {
+            if (e.deltaY > 0 && currentSliceIndex < imageIds.length - 1) {
+              let viewport = cornerstone.getViewport(element);
+              //   console.log(viewport);
+              setCurrentViewport({
+                scale: viewport.scale,
+                x: viewport.translation.x,
+                y: viewport.translation.y,
+              });
+              setCurrentSliceIndex(currentSliceIndex + 1);
+            } else if (e.deltaY < 0 && currentSliceIndex > 0) {
+              let viewport = cornerstone.getViewport(element);
+              //   console.log(viewport);
+              setCurrentViewport({
+                scale: viewport.scale,
+                x: viewport.translation.x,
+                y: viewport.translation.y,
+              });
+              setCurrentSliceIndex(currentSliceIndex - 1);
+            }
+          };
+
+          element.addEventListener("wheel", handleScroll);
+
+          //load cornerstone tools after intial image loading, else they will not mount properly
+          setLoadTool(true);
         });
-
-        setCurrentCoord({
-          x: x.toFixed(2),
-          y: y.toFixed(2),
-        });
-
-        setCurrentImgCoord({
-          x: imagePoint.x.toFixed(2),
-          y: imagePoint.y.toFixed(2),
-        });
-      };
-
-      element.addEventListener("mousemove", handleMouseEvent);
-
-      //load cornerstone tools after intial image loading, else they will not mount properly
-      setLoadTool(true);
-    });
-  }, [imageIds]);
+    }
+  }, [currentSliceIndex, loadImg]);
 
   useEffect(() => {
     const element = canvasRef.current;
@@ -138,22 +188,6 @@ export default function DicomViewerStackTool(props) {
     cornerstoneTools.addTool(WwwcTool);
     cornerstoneTools.setToolActive("Wwwc", { mouseButtonMask: 4 });
 
-    const stack = {
-      currentImageIdIndex: 0,
-      imageIds: imageIds,
-    };
-
-    cornerstoneTools.addStackStateManager(element, ["stack"]);
-    cornerstoneTools.addToolState(element, "stack", stack);
-
-    // stack scroll using built-in cornerstone tool
-    // const StackScrollMouseWheelTool =
-    //   cornerstoneTools.StackScrollMouseWheelTool;
-    // cornerstoneTools.addTool(StackScrollMouseWheelTool);
-    // cornerstoneTools.setToolActive("StackScrollMouseWheel", {
-    //   mouseButtonMask: 0x1,
-    // });
-
     //remove length measurement
     element.addEventListener("mousedown", (e) => {
       // Get the tool state for the "length" tool
@@ -171,30 +205,6 @@ export default function DicomViewerStackTool(props) {
       }
     });
   }, [loadTool]);
-
-  //change slice index
-  const handleScroll = (e) => {
-    if (e.deltaY > 0 && currentSliceIndex < imageIds.length - 1) {
-      setCurrentSliceIndex(currentSliceIndex + 1);
-    } else if (e.deltaY < 0 && currentSliceIndex > 0) {
-      setCurrentSliceIndex(currentSliceIndex - 1);
-    }
-  };
-
-  //change displayed image by slice index
-  useEffect(() => {
-    const element = canvasRef.current;
-    element.addEventListener("wheel", handleScroll);
-
-    cornerstone.loadAndCacheImage(imageIds[currentSliceIndex]).then((image) => {
-      // console.log("current slice: ", currentSliceIndex);
-      cornerstone.displayImage(element, image);
-    });
-
-    return () => {
-      element.removeEventListener("wheel", handleScroll);
-    };
-  }, [currentSliceIndex]);
 
   useEffect(() => {
     if (isRuler) {
@@ -288,7 +298,7 @@ export default function DicomViewerStackTool(props) {
         </p>
         <p>Image scale: {currentViewport.scale.toFixed(2)}</p>
         <p>
-          Image translation:{" "}
+          Image translation:
           {`( ${currentViewport.x.toFixed(2)}, ${currentViewport.y.toFixed(
             2
           )} )`}
