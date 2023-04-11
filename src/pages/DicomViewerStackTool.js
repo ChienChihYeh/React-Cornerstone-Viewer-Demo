@@ -22,6 +22,15 @@ export default function DicomViewerStackTool(props) {
     x: 0,
     y: 0,
   });
+  const [currentImgCoord, setCurrentImgCoord] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [currentViewport, setCurrentViewport] = useState({
+    scale: 1,
+    x: 0,
+    y: 0,
+  });
 
   const stack = {
     currentImageIdIndex: 0,
@@ -61,22 +70,44 @@ export default function DicomViewerStackTool(props) {
               y: 0,
             },
           });
+          setCurrentViewport({
+            scale: 1,
+            x: 0,
+            y: 0,
+          });
         }
       });
 
       const handleMouseEvent = (e) => {
         let viewport = cornerstone.getViewport(element);
         let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
-        let x =
-          imagePoint.x / viewport.scale -
-          viewport.translation.x / viewport.scale;
-        let y =
-          imagePoint.y / viewport.scale -
-          viewport.translation.y / viewport.scale;
+
+        let rect = element.getBoundingClientRect();
+
+        let x = e.pageX - rect.left;
+        let y = e.pageY - rect.top;
+
+        setCurrentViewport({
+          scale: viewport.scale,
+          x: viewport.translation.x,
+          y: viewport.translation.y,
+        });
+
+        // console.log(viewport);
+        // console.log(
+        //   "current:" + imagePoint.x.toFixed(0) + "," + imagePoint.y.toFixed(0)
+        // );
+
         // console.log(`(x, y): (${x.toFixed(2)}, ${y.toFixed(2)})`);
+
         setCurrentCoord({
           x: x.toFixed(2),
           y: y.toFixed(2),
+        });
+
+        setCurrentImgCoord({
+          x: imagePoint.x.toFixed(2),
+          y: imagePoint.y.toFixed(2),
         });
       };
 
@@ -198,6 +229,10 @@ export default function DicomViewerStackTool(props) {
     cornerstone.updateImage(element);
   };
 
+  window.addEventListener("mouseup", (e) => {
+    setShowCross(false);
+  });
+
   return (
     <>
       <h1>Cornerstone Dicom Viewer</h1>
@@ -212,9 +247,6 @@ export default function DicomViewerStackTool(props) {
           if (e.button === 0 && !isRuler) {
             setShowCross(true);
           }
-        }}
-        onMouseUp={(e) => {
-          setShowCross(false);
         }}
       >
         <div
@@ -256,6 +288,17 @@ export default function DicomViewerStackTool(props) {
         <p>
           Current Coord:
           {" ( " + currentCoord.x + " , " + currentCoord.y + " )"}
+        </p>
+        <p>
+          Absolute Coord In Image:
+          {" ( " + currentImgCoord.x + " , " + currentImgCoord.y + " )"}
+        </p>
+        <p>Image scale: {currentViewport.scale.toFixed(2)}</p>
+        <p>
+          Image translation:{" "}
+          {`( ${currentViewport.x.toFixed(2)}, ${currentViewport.y.toFixed(
+            2
+          )} )`}
         </p>
         <button
           type="button"
