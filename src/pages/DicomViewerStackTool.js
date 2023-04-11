@@ -190,6 +190,14 @@ export default function DicomViewerStackTool(props) {
     }
   }
 
+  const clearMeasure = (e) => {
+    const element = canvasRef.current;
+    const toolState = cornerstoneTools.getToolState(element, "Length");
+
+    toolState.data = [];
+    cornerstone.updateImage(element);
+  };
+
   return (
     <>
       <h1>Cornerstone Dicom Viewer</h1>
@@ -246,11 +254,19 @@ export default function DicomViewerStackTool(props) {
         <p>Image Index: {currentSliceIndex}</p>
         <p>Image ID: {imageIds[currentSliceIndex]}</p>
         <p>
-          Current Cord:
-          {"( " + currentCoord.x + " , " + currentCoord.y + " )"}
+          Current Coord:
+          {" ( " + currentCoord.x + " , " + currentCoord.y + " )"}
         </p>
+        <button
+          type="button"
+          onClick={() => {
+            clearMeasure();
+          }}
+        >
+          Clear
+        </button>
         <button type="button" onClick={switchRuler}>
-          {isRuler ? "crosshairs" : "ruler"}
+          {isRuler ? "Crosshairs" : "Ruler"}
         </button>
       </div>
     </>
