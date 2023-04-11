@@ -77,8 +77,7 @@ export default function DicomViewerAjax(props) {
             },
           });
 
-          //viewport reset
-          window.addEventListener("mouseup", (e) => {
+          const resetViewport = (e) => {
             let viewport = cornerstone.getViewport(element);
             // console.log(viewport.scale);
             if (viewport.scale <= 1) {
@@ -95,7 +94,10 @@ export default function DicomViewerAjax(props) {
                 y: 0,
               });
             }
-          });
+          };
+
+          //viewport reset
+          window.addEventListener("mouseup", resetViewport);
 
           const handleMouseEvent = (e) => {
             let viewport = cornerstone.getViewport(element);
