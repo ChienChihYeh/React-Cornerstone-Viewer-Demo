@@ -1,7 +1,9 @@
 .viewer {
   margin: auto;
-  width: 360px;
-  height: 360px;
+  width: 512px;
+  height: 512px;
+  position: relative;
+  overflow: hidden;
 }
 
 h1 {
@@ -10,4 +12,20 @@ h1 {
 
 .dicom-info {
   text-align: center;
+}
+
+.crosshair {
+  position: absolute;
+}
+
+.crosshair-x {
+  height: 1px;
+  width: 1000px;
+  background-color: #f00;
+}
+
+.crosshair-y {
+  height: 1000px;
+  width: 1px;
+  background-color: #0f0;
 }

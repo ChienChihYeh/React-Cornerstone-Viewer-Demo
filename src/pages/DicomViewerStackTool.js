@@ -9,6 +9,8 @@ import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 
 export default function DicomViewerStackTool(props) {
+  const [isRuler, setIsRuler] = useState(false);
+  const [showCross, setShowCross] = useState(false);
   const [loadTool, setLoadTool] = useState(false);
   const [currentSliceIndex, setCurrentSliceIndex] = useState(0);
   const [imageIds, setImageIds] = useState([
@@ -26,8 +28,10 @@ export default function DicomViewerStackTool(props) {
     imageIds: imageIds,
   };
 
+  const imageSize = 512;
+  const crossSpace = 20;
+
   const canvasRef = useRef(null);
-  const element = canvasRef.current;
 
   useEffect(() => {
     //initialize cornerstone
@@ -49,9 +53,9 @@ export default function DicomViewerStackTool(props) {
       window.addEventListener("mouseup", (e) => {
         let viewport = cornerstone.getViewport(element);
         // console.log(viewport.scale);
-        if (viewport.scale <= 0.7) {
+        if (viewport.scale <= 1) {
           cornerstone.setViewport(element, {
-            scale: 0.7,
+            scale: 1,
             translation: {
               x: 0,
               y: 0,
@@ -59,6 +63,24 @@ export default function DicomViewerStackTool(props) {
           });
         }
       });
+
+      const handleMouseEvent = (e) => {
+        let viewport = cornerstone.getViewport(element);
+        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+        let x =
+          imagePoint.x / viewport.scale -
+          viewport.translation.x / viewport.scale;
+        let y =
+          imagePoint.y / viewport.scale -
+          viewport.translation.y / viewport.scale;
+        // console.log(`(x, y): (${x.toFixed(2)}, ${y.toFixed(2)})`);
+        setCurrentCoord({
+          x: x.toFixed(2),
+          y: y.toFixed(2),
+        });
+      };
+
+      element.addEventListener("mousemove", handleMouseEvent);
 
       //load cornerstone tools after intial image loading, else they will not mount properly
       setLoadTool(true);
@@ -74,7 +96,7 @@ export default function DicomViewerStackTool(props) {
       configuration: {
         invert: true,
         preventZoomOutsideImage: false,
-        minScale: 0.7,
+        minScale: 1,
         maxScale: 20.0,
       },
     });
@@ -100,6 +122,7 @@ export default function DicomViewerStackTool(props) {
     cornerstoneTools.addStackStateManager(element, ["stack"]);
     cornerstoneTools.addToolState(element, "stack", stack);
 
+    // stack scroll using built-in cornerstone tool
     // const StackScrollMouseWheelTool =
     //   cornerstoneTools.StackScrollMouseWheelTool;
     // cornerstoneTools.addTool(StackScrollMouseWheelTool);
@@ -107,18 +130,9 @@ export default function DicomViewerStackTool(props) {
     //   mouseButtonMask: 0x1,
     // });
 
-    cornerstoneTools.setToolActive("Length", {
-      mouseButtonMask: 1,
-    });
-
-    // Add event listener for getting (x,y) from left-click drag
-    element.addEventListener("cornerstonetoolsmousedrag", handleMouseDrag);
-
     //remove length measurement
     element.addEventListener("mousedown", (e) => {
       // Get the tool state for the "length" tool
-      // console.log(e.which);
-
       const toolState = cornerstoneTools.getToolState(element, "Length");
 
       if (toolState && toolState.data) {
@@ -132,26 +146,7 @@ export default function DicomViewerStackTool(props) {
         });
       }
     });
-
-    return () => {
-      element.removeEventListener("cornerstonetoolsmousedrag", handleMouseDrag);
-    };
   }, [loadTool]);
-
-  const handleMouseDrag = (e) => {
-    // console.log(e.detail.buttons);
-    const coords = cornerstone.pageToPixel(
-      element,
-      e.detail.currentPoints.page.x,
-      e.detail.currentPoints.page.y
-    );
-    if (e.detail.buttons === 1) {
-      setCurrentCoord({
-        x: coords.x.toFixed(2),
-        y: coords.y.toFixed(2),
-      });
-    }
-  };
 
   //change slice index
   const handleScroll = (e) => {
@@ -168,7 +163,7 @@ export default function DicomViewerStackTool(props) {
     element.addEventListener("wheel", handleScroll);
 
     cornerstone.loadAndCacheImage(imageIds[currentSliceIndex]).then((image) => {
-      console.log("current slice: ", currentSliceIndex);
+      // console.log("current slice: ", currentSliceIndex);
       cornerstone.displayImage(element, image);
     });
 
@@ -176,6 +171,24 @@ export default function DicomViewerStackTool(props) {
       element.removeEventListener("wheel", handleScroll);
     };
   }, [currentSliceIndex]);
+
+  useEffect(() => {
+    if (isRuler) {
+      cornerstoneTools.setToolActive("Length", {
+        mouseButtonMask: 1,
+      });
+    } else {
+      cornerstoneTools.setToolEnabled("Length");
+    }
+  }, [isRuler]);
+
+  function switchRuler() {
+    if (isRuler) {
+      setIsRuler(false);
+    } else {
+      setIsRuler(true);
+    }
+  }
 
   return (
     <>
@@ -187,14 +200,58 @@ export default function DicomViewerStackTool(props) {
           e.preventDefault();
           return false;
         }}
-      ></div>
+        onMouseDown={(e) => {
+          if (e.button === 0 && !isRuler) {
+            setShowCross(true);
+          }
+        }}
+        onMouseUp={(e) => {
+          setShowCross(false);
+        }}
+      >
+        <div
+          className="crosshair crosshair-y"
+          style={{
+            bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
+            left: `${parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+        <div
+          className="crosshair crosshair-y"
+          style={{
+            top: `${crossSpace + parseInt(currentCoord.y)}px`,
+            left: `${parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+        <div
+          className="crosshair crosshair-x"
+          style={{
+            top: `${parseInt(currentCoord.y)}px`,
+            right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+        <div
+          className="crosshair crosshair-x"
+          style={{
+            top: `${parseInt(currentCoord.y)}px`,
+            left: `${crossSpace + parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+      </div>
       <div className="dicom-info">
         <p>Image Index: {currentSliceIndex}</p>
         <p>Image ID: {imageIds[currentSliceIndex]}</p>
         <p>
-          Coord During Dragging:
+          Current Cord:
           {"( " + currentCoord.x + " , " + currentCoord.y + " )"}
         </p>
+        <button type="button" onClick={switchRuler}>
+          {isRuler ? "crosshairs" : "ruler"}
+        </button>
       </div>
     </>
   );
