@@ -9,7 +9,7 @@ import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
 
-//TODO: implement stack tool and move loading Image[currentSliceIndex] to seperate useEffect
+//TODO: implement stack tool and move loading Image[currentSliceIndex] to seperate hook?
 
 export default function DicomViewerAjax(props) {
   const [isRuler, setIsRuler] = useState(false);
@@ -68,6 +68,8 @@ export default function DicomViewerAjax(props) {
       cornerstone
         .loadAndCacheImage(imageIds[currentSliceIndex])
         .then((image) => {
+          //dicom data birthday
+          console.log(image.data.string("x00100030"));
           cornerstone.displayImage(element, image);
           cornerstone.setViewport(element, {
             scale: currentViewport.scale,
@@ -96,9 +98,6 @@ export default function DicomViewerAjax(props) {
             }
           };
 
-          //viewport reset
-          window.addEventListener("mouseup", resetViewport);
-
           const handleMouseEvent = (e) => {
             let viewport = cornerstone.getViewport(element);
             let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
@@ -125,8 +124,6 @@ export default function DicomViewerAjax(props) {
             });
           };
 
-          element.addEventListener("mousemove", handleMouseEvent);
-
           //change slice index
           const handleScroll = (e) => {
             if (e.deltaY > 0 && currentSliceIndex < imageIds.length - 1) {
@@ -149,6 +146,11 @@ export default function DicomViewerAjax(props) {
               setCurrentSliceIndex(currentSliceIndex - 1);
             }
           };
+
+          element.addEventListener("mousemove", handleMouseEvent);
+
+          //viewport reset
+          window.addEventListener("mouseup", resetViewport);
 
           element.addEventListener("wheel", handleScroll);
 
