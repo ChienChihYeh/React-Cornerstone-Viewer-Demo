@@ -25,7 +25,7 @@ export default function CornerstoneAjax(props) {
     studyDate: "",
     patientID: "",
     name: "",
-    birthday: "",
+    age: "",
     gender: "",
   });
 
@@ -74,13 +74,39 @@ export default function CornerstoneAjax(props) {
     if (imageIds.length > 0) {
       cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
         cornerstone.enable(element);
+
+        //calculate patient age from studyDate and birthday
+        const getDateFromString = (dateString) => {
+          const year = dateString.slice(0, 4);
+          const month = dateString.slice(4, 6) - 1;
+          const day = dateString.slice(6, 8);
+
+          return new Date(year, month, day);
+        };
+
+        const studyString = image.data.string("x00080020");
+        const studyYear = studyString.slice(0, 4);
+        const studyMonth = studyString.slice(4, 6) - 1;
+        const studyDay = studyString.slice(6, 8);
+        const studyDate = getDateFromString(studyString);
+
+        const birthString = image.data.string("x00100030");
+        const birthday = getDateFromString(birthString);
+
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365.25;
+        const age = Math.floor((studyDate - birthday) / millisecondsPerYear);
+        // console.log("age: " + age);
+
+        //set dicom data from initial image
         setCurrentCase({
-          studyDate: image.data.string("x00080020"),
+          studyDate: `${studyYear}/${studyMonth + 1}/${studyDay}`,
           patientID: image.data.string("x00100020"),
           name: image.data.string("x00100010"),
-          birthday: image.data.string("x00100030"),
+          age: age,
           gender: image.data.string("x00100040"),
         });
+
+        //display intial image
         cornerstone.displayImage(element, image);
 
         // let viewport = cornerstone.getViewport(element);
@@ -276,7 +302,7 @@ export default function CornerstoneAjax(props) {
             <th>Study Date</th>
             <th>Patient ID</th>
             <th>Name</th>
-            <th>Birthday</th>
+            <th>age</th>
             <th>Gender</th>
           </tr>
         </thead>
@@ -285,7 +311,7 @@ export default function CornerstoneAjax(props) {
             <td>{currentCase.studyDate}</td>
             <td>{currentCase.patientID}</td>
             <td>{currentCase.name}</td>
-            <td>{currentCase.birthday}</td>
+            <td>{currentCase.age}</td>
             <td>{currentCase.gender}</td>
           </tr>
         </tbody>
