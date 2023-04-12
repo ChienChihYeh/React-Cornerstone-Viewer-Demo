@@ -271,7 +271,7 @@ export default function WebImageAjax(props) {
             <th>Study Date</th>
             <th>Patient ID</th>
             <th>Name</th>
-            <th>age</th>
+            <th>Age</th>
             <th>Gender</th>
           </tr>
         </thead>
