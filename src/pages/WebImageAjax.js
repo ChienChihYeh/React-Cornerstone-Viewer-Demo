@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import dicomParser from "dicom-parser";
 import cornerstone from "cornerstone-core";
-import cornerstoneWADOImageLoader from "cornerstone-wado-image-loader";
+import cornerstoneWebImageLoader from "cornerstone-web-image-loader";
 import cornerstoneMath from "cornerstone-math";
 import cornerstoneTools from "cornerstone-tools";
 import Hammer from "hammerjs";
@@ -9,7 +8,7 @@ import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
 
-export default function CornerstoneAjax(props) {
+export default function WebImageAjax(props) {
   const canvasRef = useRef(null);
 
   const [imageIds, setImageIds] = useState([]);
@@ -22,11 +21,11 @@ export default function CornerstoneAjax(props) {
 
   //dicom header data
   const [currentCase, setCurrentCase] = useState({
-    studyDate: "",
-    patientID: "",
-    name: "",
-    age: "",
-    gender: "",
+    studyDate: "N/A",
+    patientID: "N/A",
+    name: "N/A",
+    age: "N/A",
+    gender: "N/A",
   });
 
   //coord data
@@ -54,12 +53,10 @@ export default function CornerstoneAjax(props) {
     cornerstoneTools.external.Hammer = Hammer;
 
     //initialize dicom image loader/parser
-    cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-    cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
-    //initialize cornerstone
+    cornerstoneWebImageLoader.external.cornerstone = cornerstone; // set up Cornerstone Web Image Loader
 
     axios
-      .get("/json/data.json")
+      .get("/json/web.json")
       .then((response) => {
         setImageIds(response.data);
       })
@@ -76,35 +73,6 @@ export default function CornerstoneAjax(props) {
     if (imageIds.length > 0) {
       cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
         cornerstone.enable(element);
-
-        //calculate patient age from studyDate and birthday
-        const getDateFromString = (dateString) => {
-          const year = dateString.slice(0, 4);
-          const month = dateString.slice(4, 6) - 1;
-          const day = dateString.slice(6, 8);
-
-          return new Date(year, month, day);
-        };
-
-        const studyString = image.data.string("x00080020");
-        const studyYear = studyString.slice(0, 4);
-        const studyMonth = studyString.slice(4, 6) - 1;
-        const studyDay = studyString.slice(6, 8);
-
-        const birthString = image.data.string("x00100030");
-        const birthday = getDateFromString(birthString);
-
-        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365.25;
-        const age = Math.floor((new Date() - birthday) / millisecondsPerYear);
-
-        //set dicom data from initial image
-        setCurrentCase({
-          studyDate: `${studyYear}/${studyMonth + 1}/${studyDay}`,
-          patientID: image.data.string("x00100020"),
-          name: image.data.string("x00100010"),
-          age: age,
-          gender: image.data.string("x00100040"),
-        });
 
         //display intial image
         cornerstone.displayImage(element, image);
@@ -128,29 +96,29 @@ export default function CornerstoneAjax(props) {
         });
 
         const handleMouseMoveEvent = (e) => {
-          // let viewport = cornerstone.getViewport(element);
-          // let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+          let viewport = cornerstone.getViewport(element);
+          let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
 
           //each viewport must reference unique element else you get wrong coordinates
           let rect = element.getBoundingClientRect();
           let x = e.pageX - rect.left;
           let y = e.pageY - rect.top;
 
-          // setCurrentViewport({
-          //   scale: viewport.scale,
-          //   x: viewport.translation.x,
-          //   y: viewport.translation.y,
-          // });
+          setCurrentViewport({
+            scale: viewport.scale,
+            x: viewport.translation.x,
+            y: viewport.translation.y,
+          });
 
           setCurrentCoord({
             x: x.toFixed(2),
             y: y.toFixed(2),
           });
 
-          // setCurrentImgCoord({
-          //   x: imagePoint.x.toFixed(2),
-          //   y: imagePoint.y.toFixed(2),
-          // });
+          setCurrentImgCoord({
+            x: imagePoint.x.toFixed(2),
+            y: imagePoint.y.toFixed(2),
+          });
         };
 
         element.addEventListener("mousemove", handleMouseMoveEvent);
@@ -373,7 +341,7 @@ export default function CornerstoneAjax(props) {
           Current Coord:
           {" ( " + currentCoord.x + " , " + currentCoord.y + " )"}
         </p>
-        {/* <p>
+        <p>
           Absolute Coord In Image:
           {" ( " + currentImgCoord.x + " , " + currentImgCoord.y + " )"}
         </p>
@@ -383,7 +351,7 @@ export default function CornerstoneAjax(props) {
           {`( ${currentViewport.x.toFixed(2)}, ${currentViewport.y.toFixed(
             2
           )} )`}
-        </p> */}
+        </p>
         <button
           type="button"
           onClick={() => {
