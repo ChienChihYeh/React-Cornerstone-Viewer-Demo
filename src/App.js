@@ -8,6 +8,7 @@ import DicomViewerZoom from "./pages/DicomViewerZoom";
 import DicomViewerXY from "./pages/DicomViewerXY";
 import DicomViewerStackTool from "./pages/DicomViewerStackTool";
 import DicomViewerAjax from "./pages/DicomViewerAjax";
+import CornerstoneAjax from "./pages/CornerstoneAjax";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           element={<DicomViewerStackTool />}
         />
         <Route path="/dicomviewerajax" element={<DicomViewerAjax />} />
+        <Route path="/cornerstoneajax" element={<CornerstoneAjax />} />
       </Routes>
     </BrowserRouter>
   );
