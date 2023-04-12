@@ -1,3 +1,4 @@
+//DEPRECATED
 import React, { useEffect, useRef, useState } from "react";
 import dicomParser from "dicom-parser";
 import cornerstone from "cornerstone-core";
@@ -8,8 +9,6 @@ import Hammer from "hammerjs";
 import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
-
-//TODO: implement stack tool and move loading Image[currentSliceIndex] to seperate hook?
 
 export default function DicomViewerAjax(props) {
   const [isRuler, setIsRuler] = useState(false);

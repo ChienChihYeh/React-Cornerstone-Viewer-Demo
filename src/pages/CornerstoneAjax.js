@@ -16,6 +16,38 @@ export default function CornerstoneAjax(props) {
   const [loadTool, setLoadTool] = useState(false);
   const [currentImageIdIndex, setCurrentImageIdIndex] = useState(0);
 
+  //tool switch state
+  const [isRuler, setIsRuler] = useState(false);
+  const [showCross, setShowCross] = useState(false);
+
+  //dicom header data
+  const [currentCase, setCurrentCase] = useState({
+    studyDate: "",
+    patientID: "",
+    name: "",
+    birthday: "",
+    gender: "",
+  });
+
+  //coord data
+  const [currentCoord, setCurrentCoord] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [currentImgCoord, setCurrentImgCoord] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [currentViewport, setCurrentViewport] = useState({
+    scale: 1,
+    x: 0,
+    y: 0,
+  });
+
+  //settings
+  const imageSize = 512;
+  const crossSpace = 20;
+
   useEffect(() => {
     cornerstoneTools.external.cornerstone = cornerstone;
     cornerstoneTools.external.cornerstoneMath = cornerstoneMath;
@@ -37,16 +69,22 @@ export default function CornerstoneAjax(props) {
   }, []);
 
   useEffect(() => {
-    console.log(imageIds);
+    // console.log(imageIds);
     const element = canvasRef.current;
     if (imageIds.length > 0) {
       cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
         cornerstone.enable(element);
-        console.log(image.data.string("x00100030"));
+        setCurrentCase({
+          studyDate: image.data.string("x00080020"),
+          patientID: image.data.string("x00100020"),
+          name: image.data.string("x00100010"),
+          birthday: image.data.string("x00100030"),
+          gender: image.data.string("x00100040"),
+        });
         cornerstone.displayImage(element, image);
 
-        let viewport = cornerstone.getViewport(element);
-        console.log(viewport);
+        // let viewport = cornerstone.getViewport(element);
+        // console.log(viewport);
 
         //viewport reset
         window.addEventListener("mouseup", (e) => {
@@ -62,6 +100,33 @@ export default function CornerstoneAjax(props) {
             });
           }
         });
+
+        const handleMouseEvent = (e) => {
+          let viewport = cornerstone.getViewport(element);
+          let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+
+          let rect = element.getBoundingClientRect();
+          let x = e.pageX - rect.left;
+          let y = e.pageY - rect.top;
+
+          setCurrentViewport({
+            scale: viewport.scale,
+            x: viewport.translation.x,
+            y: viewport.translation.y,
+          });
+
+          setCurrentCoord({
+            x: x.toFixed(2),
+            y: y.toFixed(2),
+          });
+
+          setCurrentImgCoord({
+            x: imagePoint.x.toFixed(2),
+            y: imagePoint.y.toFixed(2),
+          });
+        };
+
+        element.addEventListener("mousemove", handleMouseEvent);
 
         setLoadTool(true);
       });
@@ -94,13 +159,14 @@ export default function CornerstoneAjax(props) {
     cornerstoneTools.toolColors.setActiveColor("rgb(0, 255, 0)");
     cornerstoneTools.toolColors.setToolColor("rgb(255, 255, 0)");
 
+    const WwwcTool = cornerstoneTools.WwwcTool;
+    cornerstoneTools.addTool(WwwcTool);
+
     cornerstoneTools.setToolActive("Zoom", {
       mouseButtonMask: 2,
     });
 
-    cornerstoneTools.setToolActive("Length", {
-      mouseButtonMask: 1,
-    });
+    cornerstoneTools.setToolActive("Wwwc", { mouseButtonMask: 4 });
 
     const stack = {
       currentImageIdIndex: 0,
@@ -171,9 +237,59 @@ export default function CornerstoneAjax(props) {
     }
   }, [currentImageIdIndex]);
 
+  useEffect(() => {
+    if (isRuler) {
+      cornerstoneTools.setToolActive("Length", {
+        mouseButtonMask: 1,
+      });
+    } else {
+      cornerstoneTools.setToolEnabled("Length");
+    }
+  }, [isRuler]);
+
+  const switchRuler = () => {
+    if (isRuler) {
+      setIsRuler(false);
+    } else {
+      setIsRuler(true);
+    }
+  };
+
+  const clearMeasure = (e) => {
+    const element = canvasRef.current;
+    const toolState = cornerstoneTools.getToolState(element, "Length");
+
+    toolState.data = [];
+    cornerstone.updateImage(element);
+  };
+
+  window.addEventListener("mouseup", (e) => {
+    setShowCross(false);
+  });
+
   return (
     <>
-      <h1>Ajax Test</h1>
+      <h1>Cornerstone Ajax</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Study Date</th>
+            <th>Patient ID</th>
+            <th>Name</th>
+            <th>Birthday</th>
+            <th>Gender</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{currentCase.studyDate}</td>
+            <td>{currentCase.patientID}</td>
+            <td>{currentCase.name}</td>
+            <td>{currentCase.birthday}</td>
+            <td>{currentCase.gender}</td>
+          </tr>
+        </tbody>
+      </table>
       <div
         ref={canvasRef}
         className="viewer"
@@ -182,12 +298,76 @@ export default function CornerstoneAjax(props) {
           return false;
         }}
         onWheel={scrollSlice}
-      ></div>
+        onMouseDown={(e) => {
+          if (e.button === 0 && !isRuler) {
+            setShowCross(true);
+          }
+        }}
+      >
+        <div
+          className="crosshair crosshair-y"
+          style={{
+            bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
+            left: `${parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+        <div
+          className="crosshair crosshair-y"
+          style={{
+            top: `${crossSpace + parseInt(currentCoord.y)}px`,
+            left: `${parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+        <div
+          className="crosshair crosshair-x"
+          style={{
+            top: `${parseInt(currentCoord.y)}px`,
+            right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+        <div
+          className="crosshair crosshair-x"
+          style={{
+            top: `${parseInt(currentCoord.y)}px`,
+            left: `${crossSpace + parseInt(currentCoord.x)}px`,
+            display: `${showCross ? "block" : "none"}`,
+          }}
+        ></div>
+      </div>
       <div className="dicom-info">
         <p>
           Slice: {currentImageIdIndex + 1} / {imageIds.length}
         </p>
         <p>Image Link : {imageIds[currentImageIdIndex]}</p>
+        <p>
+          Current Coord:
+          {" ( " + currentCoord.x + " , " + currentCoord.y + " )"}
+        </p>
+        <p>
+          Absolute Coord In Image:
+          {" ( " + currentImgCoord.x + " , " + currentImgCoord.y + " )"}
+        </p>
+        <p>Image scale: {currentViewport.scale.toFixed(2)}</p>
+        <p>
+          Image translation:{" "}
+          {`( ${currentViewport.x.toFixed(2)}, ${currentViewport.y.toFixed(
+            2
+          )} )`}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            clearMeasure();
+          }}
+        >
+          Clear
+        </button>
+        <button type="button" onClick={switchRuler}>
+          {isRuler ? "Crosshairs" : "Ruler"}
+        </button>
       </div>
     </>
   );
