@@ -1,3 +1,4 @@
 [
-  "https://rawgit.com/cornerstonejs/cornerstoneWebImageLoader/master/examples/Renal_Cell_Carcinoma.jpg"
+  "https://rawgit.com/cornerstonejs/cornerstoneWebImageLoader/master/examples/Renal_Cell_Carcinoma.jpg",
+  "http://localhost:3000/imgs/Renal_Cell_Carcinoma.jpg"
 ]
