@@ -14,7 +14,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Hello />} />
+        {/* <Route path="/" element={<Hello />} /> */}
+        <Route path="/" element={<CornerstoneAjax />} />
         <Route path="/viewer" element={<Viewer />} />
         <Route path="/dicomviewer" element={<DicomViewer />} />
         <Route path="/dicomviewerstack" element={<DicomViewerStack />} />

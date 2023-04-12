@@ -64,7 +64,9 @@ export default function CornerstoneAjax(props) {
         setImageIds(response.data);
       })
       .catch((error) => {
+        const element = canvasRef.current;
         console.error("Error fetching data:", error);
+        cornerstone.enable(element);
       });
   }, []);
 
@@ -88,14 +90,12 @@ export default function CornerstoneAjax(props) {
         const studyYear = studyString.slice(0, 4);
         const studyMonth = studyString.slice(4, 6) - 1;
         const studyDay = studyString.slice(6, 8);
-        const studyDate = getDateFromString(studyString);
 
         const birthString = image.data.string("x00100030");
         const birthday = getDateFromString(birthString);
 
         const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365.25;
-        const age = Math.floor((studyDate - birthday) / millisecondsPerYear);
-        // console.log("age: " + age);
+        const age = Math.floor((new Date() - birthday) / millisecondsPerYear);
 
         //set dicom data from initial image
         setCurrentCase({
@@ -127,10 +127,11 @@ export default function CornerstoneAjax(props) {
           }
         });
 
-        const handleMouseEvent = (e) => {
+        const handleMouseMoveEvent = (e) => {
           let viewport = cornerstone.getViewport(element);
           let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
 
+          //each viewport must reference unique element else you get wrong coordinates
           let rect = element.getBoundingClientRect();
           let x = e.pageX - rect.left;
           let y = e.pageY - rect.top;
@@ -152,7 +153,7 @@ export default function CornerstoneAjax(props) {
           });
         };
 
-        element.addEventListener("mousemove", handleMouseEvent);
+        element.addEventListener("mousemove", handleMouseMoveEvent);
 
         setLoadTool(true);
       });
