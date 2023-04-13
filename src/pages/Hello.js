@@ -5,12 +5,24 @@ export default function Hello() {
   return (
     <div className="dicom-info">
       <h1>Cornerstone Viewer Examples</h1>
-      <Link to="/viewer">Single Web Image</Link>
-      <Link to="/dicomviewer">Single Dicom Image</Link>
-      <Link to="/dicomviewerscroll">Dicom Image Stack</Link>
-      <Link to="/dicomviewerstacktool">Dicom Image Tools</Link>
-      <Link to="/cornerstoneajax">Dicom Image Ajax </Link>
-      <Link to="/webajax">Web Image Ajax</Link>
+      <Link to="/viewer">
+        <h3>Single Web Image</h3>
+      </Link>
+      <Link to="/dicomviewer">
+        <h3>Single Dicom Image</h3>
+      </Link>
+      <Link to="/dicomviewerscroll">
+        <h3>Dicom Image Stack</h3>
+      </Link>
+      <Link to="/dicomviewerstacktool">
+        <h3>Dicom Image Tool</h3>
+      </Link>
+      <Link to="/cornerstoneajax">
+        <h3>Dicom Image Ajax</h3>
+      </Link>
+      <Link to="/webajax">
+        <h3>Web Image Ajax</h3>
+      </Link>
     </div>
   );
 }
