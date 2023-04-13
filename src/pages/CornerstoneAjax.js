@@ -215,6 +215,8 @@ export default function CornerstoneAjax(props) {
       imageIds: imageIds,
     };
 
+    cornerstoneTools.setToolEnabled("Length");
+
     const removeMeasurements = (e) => {
       // Get the tool state for the "length" tool
       const toolState = cornerstoneTools.getToolState(element, "Length");
