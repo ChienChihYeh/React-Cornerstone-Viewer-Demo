@@ -244,6 +244,10 @@ export default function CornerstoneAjax(props) {
       }
     };
 
+    const handleMeasurementModified = (e) => {
+      // console.log(e.detail);
+    };
+
     if (loadTool) {
       // activate this if you want to sync length tool across slices
       cornerstoneTools.addStackStateManager(element, ["stack", "Length"]);
@@ -263,10 +267,10 @@ export default function CornerstoneAjax(props) {
       element.addEventListener("mousedown", removeMeasurements);
       console.log("mousedown added");
 
-      // element.addEventListener(
-      //   cornerstoneTools.EVENTS.MEASUREMENT_MODIFIED,
-      //   handleMeasurementModified
-      // );
+      element.addEventListener(
+        cornerstoneTools.EVENTS.MEASUREMENT_MODIFIED,
+        handleMeasurementModified
+      );
     }
 
     return () => {
@@ -275,10 +279,10 @@ export default function CornerstoneAjax(props) {
         console.log("mousedown removed");
       }
       cornerstoneTools.clearToolState(element, "Length");
-      // element.removeEventListener(
-      //   cornerstoneTools.EVENTS.MEASUREMENT_MODIFIED,
-      //   handleMeasurementModified
-      // );
+      element.removeEventListener(
+        cornerstoneTools.EVENTS.MEASUREMENT_MODIFIED,
+        handleMeasurementModified
+      );
     };
   }, [loadTool]);
 
