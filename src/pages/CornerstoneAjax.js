@@ -234,7 +234,7 @@ export default function CornerstoneAjax(props) {
     };
 
     if (loadTool) {
-      cornerstoneTools.addStackStateManager(element, ["stack"]);
+      cornerstoneTools.addStackStateManager(element, ["stack", "Length"]);
       cornerstoneTools.addToolState(element, "stack", stack);
 
       // stack scroll using built-in cornerstone tool
@@ -254,6 +254,7 @@ export default function CornerstoneAjax(props) {
         element.removeEventListener("mousedown", removeMeasurements);
         console.log("mousedown removed");
       }
+      cornerstoneTools.clearToolState(element, "Length");
     };
   }, [loadTool]);
 
@@ -283,6 +284,11 @@ export default function CornerstoneAjax(props) {
           const element = canvasRef.current;
           cornerstone.displayImage(element, image);
 
+          let stack = cornerstoneTools.getToolState(element, "stack");
+
+          stack.data[0].currentImageIdIndex = currentImageIdIndex;
+
+          console.log(stack);
           // check viewport
           //   let viewport = cornerstone.getViewport(element);
           //   console.log(viewport);
@@ -310,9 +316,16 @@ export default function CornerstoneAjax(props) {
 
   const clearMeasure = (e) => {
     const element = canvasRef.current;
+    // const stackManager = cornerstoneTools.getElementToolStateManager(element);
+    // console.log(stackManager);
     const toolState = cornerstoneTools.getToolState(element, "Length");
+    if (toolState.data) {
+      // console.log(toolState.data);
+      toolState.data = [];
+    }
 
-    toolState.data = [];
+    // alternative
+    // cornerstoneTools.clearToolState(element, "Length");
     cornerstone.updateImage(element);
   };
 
