@@ -75,9 +75,10 @@ export default function CornerstoneAjax(props) {
       // let info = cornerstone.imageCache.getCacheInfo();
       // console.log(info);
       cornerstone.imageCache.purgeCache();
-      console.log("cache cleared");
+      // console.log("cache cleared");
+      let info = cornerstone.imageCache.getCacheInfo();
       // info = cornerstone.imageCache.getCacheInfo();
-      // console.log(info);
+      console.log(info);
     };
   }, []);
 
@@ -244,7 +245,11 @@ export default function CornerstoneAjax(props) {
     };
 
     if (loadTool) {
+      // activate this if you want to sync length tool across slices
       cornerstoneTools.addStackStateManager(element, ["stack", "Length"]);
+
+      // activate this if you want to seperate length tool for individual slices
+      // cornerstoneTools.addStackStateManager(element, ["stack"]);
       cornerstoneTools.addToolState(element, "stack", stack);
 
       // stack scroll using built-in cornerstone tool
