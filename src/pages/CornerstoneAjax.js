@@ -247,6 +247,11 @@ export default function CornerstoneAjax(props) {
 
       element.addEventListener("mousedown", removeMeasurements);
       console.log("mousedown added");
+
+      // element.addEventListener(
+      //   cornerstoneTools.EVENTS.MEASUREMENT_MODIFIED,
+      //   handleMeasurementModified
+      // );
     }
 
     return () => {
@@ -255,6 +260,10 @@ export default function CornerstoneAjax(props) {
         console.log("mousedown removed");
       }
       cornerstoneTools.clearToolState(element, "Length");
+      // element.removeEventListener(
+      //   cornerstoneTools.EVENTS.MEASUREMENT_MODIFIED,
+      //   handleMeasurementModified
+      // );
     };
   }, [loadTool]);
 
