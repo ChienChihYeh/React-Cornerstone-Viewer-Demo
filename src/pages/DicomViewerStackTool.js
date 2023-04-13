@@ -7,6 +7,7 @@ import cornerstoneTools from "cornerstone-tools";
 import Hammer from "hammerjs";
 import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
+import { Link } from "react-router-dom";
 
 export default function DicomViewerStackTool(props) {
   const [isRuler, setIsRuler] = useState(false);
@@ -49,61 +50,71 @@ export default function DicomViewerStackTool(props) {
 
     const element = canvasRef.current;
 
+    const handleMouseMoveEvent = (e) => {
+      let viewport = cornerstone.getViewport(element);
+      let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+
+      let rect = element.getBoundingClientRect();
+
+      let x = e.pageX - rect.left;
+      let y = e.pageY - rect.top;
+
+      setCurrentViewport({
+        scale: viewport.scale,
+        x: viewport.translation.x,
+        y: viewport.translation.y,
+      });
+
+      setCurrentCoord({
+        x: x.toFixed(2),
+        y: y.toFixed(2),
+      });
+
+      setCurrentImgCoord({
+        x: imagePoint.x.toFixed(2),
+        y: imagePoint.y.toFixed(2),
+      });
+    };
+
+    const swtichOffCross = function (e) {
+      setShowCross(false);
+      let viewport = cornerstone.getViewport(element);
+      // console.log(viewport.scale);
+      if (viewport.scale <= 1) {
+        cornerstone.setViewport(element, {
+          scale: 1,
+          translation: {
+            x: 0,
+            y: 0,
+          },
+        });
+      }
+    };
+
     //intial image loading
     cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
       cornerstone.displayImage(element, image);
 
-      //viewport reset
-      window.addEventListener("mouseup", (e) => {
-        let viewport = cornerstone.getViewport(element);
-        // console.log(viewport.scale);
-        if (viewport.scale <= 1) {
-          cornerstone.setViewport(element, {
-            scale: 1,
-            translation: {
-              x: 0,
-              y: 0,
-            },
-          });
-          setCurrentViewport({
-            scale: 1,
-            x: 0,
-            y: 0,
-          });
-        }
-      });
+      if (imageIds.length > 0) {
+        window.addEventListener("mouseup", swtichOffCross);
+        console.log("mouseup added");
 
-      const handleMouseEvent = (e) => {
-        let viewport = cornerstone.getViewport(element);
-        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+        element.addEventListener("mousemove", handleMouseMoveEvent);
+        console.log("mousemove added");
 
-        let rect = element.getBoundingClientRect();
-
-        let x = e.pageX - rect.left;
-        let y = e.pageY - rect.top;
-
-        setCurrentViewport({
-          scale: viewport.scale,
-          x: viewport.translation.x,
-          y: viewport.translation.y,
-        });
-
-        setCurrentCoord({
-          x: x.toFixed(2),
-          y: y.toFixed(2),
-        });
-
-        setCurrentImgCoord({
-          x: imagePoint.x.toFixed(2),
-          y: imagePoint.y.toFixed(2),
-        });
-      };
-
-      element.addEventListener("mousemove", handleMouseEvent);
-
-      //load cornerstone tools after intial image loading, else they will not mount properly
-      setLoadTool(true);
+        //load cornerstone tools after intial image loading, else they will not mount properly
+        setLoadTool(true);
+      }
     });
+
+    return () => {
+      if (imageIds.length > 0) {
+        element.removeEventListener("mousemove", handleMouseMoveEvent);
+        window.removeEventListener("mouseup", swtichOffCross);
+        console.log("mousemove removed");
+        console.log("mouseup removed");
+      }
+    };
   }, [imageIds]);
 
   useEffect(() => {
@@ -143,19 +154,7 @@ export default function DicomViewerStackTool(props) {
       imageIds: imageIds,
     };
 
-    cornerstoneTools.addStackStateManager(element, ["stack"]);
-    cornerstoneTools.addToolState(element, "stack", stack);
-
-    // stack scroll using built-in cornerstone tool
-    // const StackScrollMouseWheelTool =
-    //   cornerstoneTools.StackScrollMouseWheelTool;
-    // cornerstoneTools.addTool(StackScrollMouseWheelTool);
-    // cornerstoneTools.setToolActive("StackScrollMouseWheel", {
-    //   mouseButtonMask: 0x1,
-    // });
-
-    //remove length measurement
-    element.addEventListener("mousedown", (e) => {
+    const removeMeasurements = (e) => {
       // Get the tool state for the "length" tool
       const toolState = cornerstoneTools.getToolState(element, "Length");
 
@@ -169,7 +168,31 @@ export default function DicomViewerStackTool(props) {
           }
         });
       }
-    });
+    };
+
+    if (loadTool) {
+      cornerstoneTools.addStackStateManager(element, ["stack"]);
+      cornerstoneTools.addToolState(element, "stack", stack);
+
+      // stack scroll using built-in cornerstone tool
+      // const StackScrollMouseWheelTool =
+      //   cornerstoneTools.StackScrollMouseWheelTool;
+      // cornerstoneTools.addTool(StackScrollMouseWheelTool);
+      // cornerstoneTools.setToolActive("StackScrollMouseWheel", {
+      //   mouseButtonMask: 0x1,
+      // });
+
+      //remove length measurement
+      element.addEventListener("mousedown", removeMeasurements);
+      console.log("mousedown added");
+    }
+
+    return () => {
+      if (loadTool) {
+        element.removeEventListener("mousedown", removeMeasurements);
+        console.log("mousedown removed");
+      }
+    };
   }, [loadTool]);
 
   //change slice index
@@ -222,10 +245,6 @@ export default function DicomViewerStackTool(props) {
     cornerstone.updateImage(element);
   };
 
-  window.addEventListener("mouseup", (e) => {
-    setShowCross(false);
-  });
-
   return (
     <>
       <h1>Cornerstone Dicom Viewer</h1>
@@ -276,6 +295,17 @@ export default function DicomViewerStackTool(props) {
         ></div>
       </div>
       <div className="dicom-info">
+        <button
+          type="button"
+          onClick={() => {
+            clearMeasure();
+          }}
+        >
+          Clear
+        </button>
+        <button type="button" onClick={switchRuler}>
+          {isRuler ? "Crosshairs" : "Ruler"}
+        </button>
         <p>Image Index: {currentSliceIndex}</p>
         <p>Image ID: {imageIds[currentSliceIndex]}</p>
         <p>
@@ -293,17 +323,7 @@ export default function DicomViewerStackTool(props) {
             2
           )} )`}
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            clearMeasure();
-          }}
-        >
-          Clear
-        </button>
-        <button type="button" onClick={switchRuler}>
-          {isRuler ? "Crosshairs" : "Ruler"}
-        </button>
+        <Link to="/">Home</Link>
       </div>
     </>
   );

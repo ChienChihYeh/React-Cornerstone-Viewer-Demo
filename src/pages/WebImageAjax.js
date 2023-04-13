@@ -7,6 +7,7 @@ import Hammer from "hammerjs";
 import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function WebImageAjax(props) {
   const canvasRef = useRef(null);
@@ -70,6 +71,48 @@ export default function WebImageAjax(props) {
   useEffect(() => {
     console.log(imageIds);
     const element = canvasRef.current;
+
+    const handleMouseMoveEvent = (e) => {
+      let viewport = cornerstone.getViewport(element);
+      let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+
+      //each viewport must reference unique element else you get wrong coordinates
+      let rect = element.getBoundingClientRect();
+      let x = e.pageX - rect.left;
+      let y = e.pageY - rect.top;
+
+      setCurrentViewport({
+        scale: viewport.scale,
+        x: viewport.translation.x,
+        y: viewport.translation.y,
+      });
+
+      setCurrentCoord({
+        x: x.toFixed(2),
+        y: y.toFixed(2),
+      });
+
+      setCurrentImgCoord({
+        x: imagePoint.x.toFixed(2),
+        y: imagePoint.y.toFixed(2),
+      });
+    };
+
+    const swtichOffCross = function (e) {
+      setShowCross(false);
+      let viewport = cornerstone.getViewport(element);
+      // console.log(viewport.scale);
+      if (viewport.scale <= 1) {
+        cornerstone.setViewport(element, {
+          scale: 1,
+          translation: {
+            x: 0,
+            y: 0,
+          },
+        });
+      }
+    };
+
     if (imageIds.length > 0) {
       cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
         cornerstone.enable(element);
@@ -81,51 +124,24 @@ export default function WebImageAjax(props) {
         // console.log(viewport);
 
         //viewport reset
-        window.addEventListener("mouseup", (e) => {
-          let viewport = cornerstone.getViewport(element);
-          // console.log(viewport.scale);
-          if (viewport.scale <= 1) {
-            cornerstone.setViewport(element, {
-              scale: 1,
-              translation: {
-                x: 0,
-                y: 0,
-              },
-            });
-          }
-        });
-
-        const handleMouseMoveEvent = (e) => {
-          let viewport = cornerstone.getViewport(element);
-          let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
-
-          //each viewport must reference unique element else you get wrong coordinates
-          let rect = element.getBoundingClientRect();
-          let x = e.pageX - rect.left;
-          let y = e.pageY - rect.top;
-
-          setCurrentViewport({
-            scale: viewport.scale,
-            x: viewport.translation.x,
-            y: viewport.translation.y,
-          });
-
-          setCurrentCoord({
-            x: x.toFixed(2),
-            y: y.toFixed(2),
-          });
-
-          setCurrentImgCoord({
-            x: imagePoint.x.toFixed(2),
-            y: imagePoint.y.toFixed(2),
-          });
-        };
+        window.addEventListener("mouseup", swtichOffCross);
+        console.log("mouseup added");
 
         element.addEventListener("mousemove", handleMouseMoveEvent);
+        console.log("mousemove added");
 
         setLoadTool(true);
       });
     }
+
+    return () => {
+      if (imageIds.length > 0) {
+        element.removeEventListener("mousemove", handleMouseMoveEvent);
+        window.removeEventListener("mouseup", swtichOffCross);
+        console.log("mousemove removed");
+        console.log("mouseup removed");
+      }
+    };
   }, [imageIds]);
 
   useEffect(() => {
@@ -168,21 +184,7 @@ export default function WebImageAjax(props) {
       imageIds: imageIds,
     };
 
-    if (loadTool) {
-      cornerstoneTools.addStackStateManager(element, ["stack"]);
-      cornerstoneTools.addToolState(element, "stack", stack);
-
-      // stack scroll using built-in cornerstone tool
-      //   const StackScrollMouseWheelTool =
-      //     cornerstoneTools.StackScrollMouseWheelTool;
-      //   cornerstoneTools.addTool(StackScrollMouseWheelTool);
-      //   cornerstoneTools.setToolActive("StackScrollMouseWheel", {
-      //     mouseButtonMask: 0x1,
-      //   });
-    }
-
-    //remove length measurement
-    element.addEventListener("mousedown", (e) => {
+    const removeMeasurements = (e) => {
       // Get the tool state for the "length" tool
       const toolState = cornerstoneTools.getToolState(element, "Length");
 
@@ -196,7 +198,30 @@ export default function WebImageAjax(props) {
           }
         });
       }
-    });
+    };
+
+    if (loadTool) {
+      cornerstoneTools.addStackStateManager(element, ["stack"]);
+      cornerstoneTools.addToolState(element, "stack", stack);
+
+      // stack scroll using built-in cornerstone tool
+      //   const StackScrollMouseWheelTool =
+      //     cornerstoneTools.StackScrollMouseWheelTool;
+      //   cornerstoneTools.addTool(StackScrollMouseWheelTool);
+      //   cornerstoneTools.setToolActive("StackScrollMouseWheel", {
+      //     mouseButtonMask: 0x1,
+      //   });
+      //remove length measurement
+      element.addEventListener("mousedown", removeMeasurements);
+      console.log("mousedown added");
+    }
+
+    return () => {
+      if (loadTool) {
+        element.removeEventListener("mousedown", removeMeasurements);
+        console.log("mousedown removed");
+      }
+    };
   }, [loadTool]);
 
   const scrollSlice = (e) => {
@@ -257,10 +282,6 @@ export default function WebImageAjax(props) {
     toolState.data = [];
     cornerstone.updateImage(element);
   };
-
-  window.addEventListener("mouseup", (e) => {
-    setShowCross(false);
-  });
 
   return (
     <>
@@ -333,6 +354,17 @@ export default function WebImageAjax(props) {
         ></div>
       </div>
       <div className="dicom-info">
+        <button
+          type="button"
+          onClick={() => {
+            clearMeasure();
+          }}
+        >
+          Clear
+        </button>
+        <button type="button" onClick={switchRuler}>
+          {isRuler ? "Crosshairs" : "Ruler"}
+        </button>
         <p>
           Slice: {currentImageIdIndex + 1} / {imageIds.length}
         </p>
@@ -352,17 +384,7 @@ export default function WebImageAjax(props) {
             2
           )} )`}
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            clearMeasure();
-          }}
-        >
-          Clear
-        </button>
-        <button type="button" onClick={switchRuler}>
-          {isRuler ? "Crosshairs" : "Ruler"}
-        </button>
+        <Link to="/">Home</Link>
       </div>
     </>
   );
