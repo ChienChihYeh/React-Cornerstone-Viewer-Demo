@@ -307,7 +307,7 @@ export default function CornerstoneAjax(props) {
 
           stack.data[0].currentImageIdIndex = currentImageIdIndex;
 
-          console.log(stack);
+          // console.log(stack);
           // check viewport
           //   let viewport = cornerstone.getViewport(element);
           //   console.log(viewport);
