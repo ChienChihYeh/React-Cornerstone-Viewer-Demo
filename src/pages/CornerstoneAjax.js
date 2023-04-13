@@ -59,16 +59,26 @@ export default function CornerstoneAjax(props) {
     cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
     //initialize cornerstone
 
+    const element = canvasRef.current;
+    cornerstone.enable(element);
+
     axios
       .get("/json/data.json")
       .then((response) => {
         setImageIds(response.data);
       })
       .catch((error) => {
-        const element = canvasRef.current;
         console.error("Error fetching data:", error);
-        cornerstone.enable(element);
       });
+
+    return () => {
+      // let info = cornerstone.imageCache.getCacheInfo();
+      // console.log(info);
+      cornerstone.imageCache.purgeCache();
+      console.log("cache cleared");
+      // info = cornerstone.imageCache.getCacheInfo();
+      // console.log(info);
+    };
   }, []);
 
   useEffect(() => {
