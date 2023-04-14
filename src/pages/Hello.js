@@ -23,6 +23,9 @@ export default function Hello() {
       <Link to="/webajax">
         <h3>Web Image Ajax</h3>
       </Link>
+      <Link to="/flaskajax">
+        <h3>Flask Ajax: For Flask Only</h3>
+      </Link>
     </div>
   );
 }

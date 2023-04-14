@@ -49,6 +49,7 @@ export default function DicomViewer(props) {
     cornerstoneTools.setToolActive("Length", {
       mouseButtonMask: 1,
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadTool]);
 

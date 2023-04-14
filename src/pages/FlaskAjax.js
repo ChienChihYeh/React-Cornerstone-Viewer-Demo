@@ -10,7 +10,7 @@ import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-export default function CornerstoneAjax(props) {
+export default function FlaskAjax(props) {
   const canvasRef = useRef(null);
 
   const [imageIds, setImageIds] = useState([]);
@@ -63,9 +63,10 @@ export default function CornerstoneAjax(props) {
     cornerstone.enable(element);
 
     axios
-      .get("/json/data.json")
+      .get("/data")
       .then((response) => {
         setImageIds(response.data);
+        console.log(response.data);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -233,7 +234,6 @@ export default function CornerstoneAjax(props) {
       const toolState = cornerstoneTools.getToolState(element, "Length");
 
       if (toolState && toolState.data) {
-        console.log(toolState.data);
         // Get the currently selected measurement
         toolState.data.forEach((v, i) => {
           if (v.active === true && e.which === 3) {
@@ -254,7 +254,7 @@ export default function CornerstoneAjax(props) {
       cornerstoneTools.addStackStateManager(element, [
         "stack",
         "Length",
-        "Wwc",
+        "WWc",
       ]);
 
       // activate this if you want to seperate length tool for individual slices

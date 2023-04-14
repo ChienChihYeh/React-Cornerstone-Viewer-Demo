@@ -171,7 +171,7 @@ export default function DicomViewerStackTool(props) {
     };
 
     if (loadTool) {
-      cornerstoneTools.addStackStateManager(element, ["stack"]);
+      cornerstoneTools.addStackStateManager(element, ["stack", "Wwc"]);
       cornerstoneTools.addToolState(element, "stack", stack);
 
       // stack scroll using built-in cornerstone tool

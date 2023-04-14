@@ -10,6 +10,7 @@ import DicomViewerStackTool from "./pages/DicomViewerStackTool";
 import CornerstoneAjax from "./pages/CornerstoneAjax";
 import Canvas from "./pages/simpleCanvas";
 import WebImageAjax from "./pages/WebImageAjax";
+import FlaskAjax from "./pages/FlaskAjax";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         />
         <Route path="/cornerstoneajax" element={<CornerstoneAjax />} />
         <Route path="/webajax" element={<WebImageAjax />} />
+        <Route path="/flaskajax" element={<FlaskAjax />} />
       </Routes>
     </BrowserRouter>
   );
