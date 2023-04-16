@@ -110,6 +110,11 @@ export default function WebImageAjax(props) {
             y: 0,
           },
         });
+        setCurrentViewport({
+          scale: 1,
+          x: 0,
+          y: 0,
+        });
       }
     };
 
@@ -320,6 +325,18 @@ export default function WebImageAjax(props) {
           }
         }}
       >
+        <div className="circle"
+        style={{
+          position: 'absolute',
+          width: `${100*currentViewport.scale}px`,
+          height: `${100*currentViewport.scale}px`,
+          border: "1px solid rgb(0, 255, 0)",
+          top: `${imageSize / 2 + (currentViewport.y + 30)* currentViewport.scale}px`,
+          left: `${imageSize / 2 + (currentViewport.x + 30) * currentViewport.scale}px`,
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%"
+        }}
+        ></div>
         <div
           className="crosshair crosshair-y"
           style={{
