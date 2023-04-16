@@ -14,7 +14,7 @@ export default function WebImageAjax(props) {
   const [noduleCoord, setNoduleCoord] = useState({
     x: 0,
     y: 0,
-    size: 100,
+    size: 50,
   })
   const [imageIds, setImageIds] = useState([])
   const [loadTool, setLoadTool] = useState(false)
