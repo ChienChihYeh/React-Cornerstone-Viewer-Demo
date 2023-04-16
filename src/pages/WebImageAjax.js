@@ -406,6 +406,13 @@ export default function WebImageAjax(props) {
             value={noduleCoord.x}
             onChange={(e) => {
               let x = e.target.value
+              setNoduleCoord({
+                ...noduleCoord,
+                x: x,
+              })
+            }}
+            onBlur={(e)=>{
+              let x = e.target.value
               if(isNaN(x) || x === "") {
                 x = 0
               }
@@ -420,6 +427,13 @@ export default function WebImageAjax(props) {
             type="text"
             value={noduleCoord.y}
             onChange={(e) => {
+              let y = e.target.value
+              setNoduleCoord({
+                ...noduleCoord,
+                y: y,
+              })
+            }}
+            onBlur={(e)=>{
               let y = e.target.value
               if(isNaN(y) || y === "") {
                 y = 0
