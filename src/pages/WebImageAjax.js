@@ -8,6 +8,7 @@ import "./../styles/styles.scss"
 import { ZoomTool, LengthTool } from "cornerstone-tools"
 import axios from "axios"
 import { Link } from "react-router-dom"
+import NoduleCanvas from "./../components/NoduleCanvas"
 
 export default function WebImageAjax(props) {
   const canvasRef = useRef(null)
@@ -77,30 +78,29 @@ export default function WebImageAjax(props) {
     const element = canvasRef.current
 
     const handleMouseMoveEvent = (e) => {
-        let viewport = cornerstone.getViewport(element)
-        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY)
-  
-        //each viewport must reference unique element else you get wrong coordinates
-        let rect = element.getBoundingClientRect()
-        let x = e.pageX - rect.left
-        let y = e.pageY - rect.top
-  
-        setCurrentViewport({
-          scale: viewport.scale,
-          x: viewport.translation.x,
-          y: viewport.translation.y,
-        })
-  
-        setCurrentCoord({
-          x: x.toFixed(2),
-          y: y.toFixed(2),
-        })
-  
-        setCurrentImgCoord({
-          x: imagePoint.x.toFixed(2),
-          y: imagePoint.y.toFixed(2),
-        })
+      let viewport = cornerstone.getViewport(element)
+      let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY)
 
+      //each viewport must reference unique element else you get wrong coordinates
+      let rect = element.getBoundingClientRect()
+      let x = e.pageX - rect.left
+      let y = e.pageY - rect.top
+
+      setCurrentViewport({
+        scale: viewport.scale,
+        x: viewport.translation.x,
+        y: viewport.translation.y,
+      })
+
+      setCurrentCoord({
+        x: x.toFixed(2),
+        y: y.toFixed(2),
+      })
+
+      setCurrentImgCoord({
+        x: imagePoint.x.toFixed(2),
+        y: imagePoint.y.toFixed(2),
+      })
     }
 
     const swtichOffCross = function (e) {
@@ -330,27 +330,42 @@ export default function WebImageAjax(props) {
           }
         }}
       >
-        <div
+        <NoduleCanvas
+          imageSize={imageSize}
+          x={parseInt(noduleCoord.x)}
+          y={parseInt(noduleCoord.y)}
+          radius={parseInt(noduleCoord.size)}
+          scale={currentViewport.scale}
+          viewX={currentViewport.x}
+          viewY={currentViewport.y}
+        />
+        {/* <div
           className="circle"
           style={{
             position: "absolute",
-            width: `${((isNaN(noduleCoord.size)? 50: parseInt(noduleCoord.size)) * currentViewport.scale).toFixed(2)}px`,
-            height: `${((isNaN(noduleCoord.size)? 50: parseInt(noduleCoord.size)) * currentViewport.scale).toFixed(
-              2
-            )}px`,
+            width: `${(
+              (isNaN(noduleCoord.size) ? 50 : parseInt(noduleCoord.size)) *
+              currentViewport.scale
+            ).toFixed(2)}px`,
+            height: `${(
+              (isNaN(noduleCoord.size) ? 50 : parseInt(noduleCoord.size)) *
+              currentViewport.scale
+            ).toFixed(2)}px`,
             border: "2px solid rgb(0, 255, 0)",
             top: `${(
               imageSize / 2 +
-              (currentViewport.y + parseInt(noduleCoord.y)) * currentViewport.scale
+              (currentViewport.y + parseInt(noduleCoord.y)) *
+                currentViewport.scale
             ).toFixed(2)}px`,
             left: `${(
               imageSize / 2 +
-              (currentViewport.x + parseInt(noduleCoord.x)) * currentViewport.scale
+              (currentViewport.x + parseInt(noduleCoord.x)) *
+                currentViewport.scale
             ).toFixed(2)}px`,
             transform: "translate(-50%, -50%)",
             borderRadius: "50%",
           }}
-        ></div>
+        ></div> */}
         <div
           className="crosshair crosshair-y"
           style={{
@@ -411,9 +426,9 @@ export default function WebImageAjax(props) {
                 x: x,
               })
             }}
-            onBlur={(e)=>{
+            onBlur={(e) => {
               let x = e.target.value
-              if(isNaN(x) || x === "") {
+              if (isNaN(x) || x === "") {
                 x = 0
               }
               setNoduleCoord({
@@ -433,9 +448,9 @@ export default function WebImageAjax(props) {
                 y: y,
               })
             }}
-            onBlur={(e)=>{
+            onBlur={(e) => {
               let y = e.target.value
-              if(isNaN(y) || y === "") {
+              if (isNaN(y) || y === "") {
                 y = 0
               }
               setNoduleCoord({
@@ -449,15 +464,23 @@ export default function WebImageAjax(props) {
             type="text"
             value={noduleCoord.size}
             onChange={(e) => {
-            
               setNoduleCoord({
                 ...noduleCoord,
                 size: e.target.value,
               })
             }}
+            onBlur={(e) => {
+              let y = e.target.value
+              if (isNaN(y) || y === "") {
+                y = 0
+              }
+              setNoduleCoord({
+                ...noduleCoord,
+                y: y,
+              })
+            }}
           ></input>
         </p>
-
         <p>Image Link : {imageIds[currentImageIdIndex]}</p>
         <p>
           Current Coord:
