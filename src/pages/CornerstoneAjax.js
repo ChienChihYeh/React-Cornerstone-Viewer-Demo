@@ -400,6 +400,15 @@ export default function CornerstoneAjax(props) {
         }}
       >
         <div
+          className="annotation-bg"
+          style={{
+            top: `${256 + 34 * currentViewport.scale}px`,
+            left: `${256 + 34 * currentViewport.scale}px`,
+            width: `${100 * currentViewport.scale}px`,
+            height: `${100 * currentViewport.scale}px`,
+          }}
+        ></div>
+        <div
           className="crosshair crosshair-y"
           style={{
             bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,

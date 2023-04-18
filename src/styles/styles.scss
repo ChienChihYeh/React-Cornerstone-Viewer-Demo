@@ -30,6 +30,15 @@ h1 {
   background-color: #0f0;
 }
 
+.annotation-bg {
+  position: absolute;
+  width: 512px;
+  height: 512px;
+  // border-radius: 50%;
+  // border: 1px solid red;
+  background-color: #ff000050;
+}
+
 button {
   margin: 0 5px;
 }
