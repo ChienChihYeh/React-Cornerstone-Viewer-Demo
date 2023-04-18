@@ -9,6 +9,8 @@ import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import NoduleCanvasArr from "./../components/NoduleCanvasArr";
+import CoronalViewer from "../components/CoronalViewer";
 
 export default function CornerstoneAjax(props) {
   const canvasRef = useRef(null);
@@ -45,6 +47,15 @@ export default function CornerstoneAjax(props) {
     y: 0,
   });
 
+  const [noduleCoord, setNoduleCoord] = useState({
+    x: 0,
+    y: 0,
+    size: 50,
+  });
+
+  const [annoArray, setAnnoArray] = useState([]);
+  const [displayArray, setDisplayArray] = useState([]);
+
   //settings
   const imageSize = 512;
   const crossSpace = 20;
@@ -62,10 +73,62 @@ export default function CornerstoneAjax(props) {
     const element = canvasRef.current;
     cornerstone.enable(element);
 
+    // axios
+    //   .get("/json/data.json")
+    //   .then((response) => {
+    //     setImageIds(response.data);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error fetching data:", error);
+    //   });
+
+    let formData = new FormData();
+    formData.append("mode", "LungRads");
+    formData.append("StudyDate", "20201205");
+    formData.append("PatientID", "17918691");
+    formData.append("AccessionNumber", "3924110977050");
+
+    const getAnnoArray = (data, totalSlice) => {
+      // console.log(data);
+      // console.log(data.LungRads_Result);
+      // console.log(data.LungRads_Result.NoduleNum);
+      // console.log(totalSlice);
+
+      let getArray = [];
+      for (let i = 0; i < data.LungRads_Result.NoduleNum; i++) {
+        let NoduleFinding = data.LungRads_Result[`NoduleFinding${i}`];
+        let NoduleSlice = totalSlice - NoduleFinding.Coord_Z.split("/")[1];
+        // console.log(NoduleSlice);
+        for (let j = -2; j <= 2; j++) {
+          let NoduleData = {
+            index: i,
+            x: NoduleFinding.Coord_X,
+            y: NoduleFinding.Coord_Y,
+            radius: NoduleFinding.Radius,
+            slice: NoduleSlice + j - 1,
+          };
+          getArray.push(NoduleData);
+        }
+      }
+      setAnnoArray(getArray);
+      console.log(getArray);
+    };
+
     axios
-      .get("/json/data.json")
+      .post("http://10.20.19.148:18000/get_file", formData)
       .then((response) => {
-        setImageIds(response.data);
+        // console.log("server response:" + JSON.stringify(response.data));
+        // console.log(response.data.path);
+        setImageIds(response.data.path);
+
+        let totalSlice = response.data.path.length;
+        formData.append("slicenum", totalSlice);
+
+        axios
+          .post("http://10.20.19.148:18000/read_LungRads_Result", formData)
+          .then((response) => {
+            getAnnoArray(response.data, totalSlice);
+          });
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -83,7 +146,7 @@ export default function CornerstoneAjax(props) {
   }, []);
 
   useEffect(() => {
-    console.log(imageIds);
+    // console.log(imageIds);
     const element = canvasRef.current;
 
     const handleMouseMoveEvent = (e) => {
@@ -160,8 +223,12 @@ export default function CornerstoneAjax(props) {
           gender: image.data.string("x00100040"),
         });
 
+        let viewport = cornerstone.getDefaultViewportForImage(element, image);
+        viewport["translation"] = { x: 0, y: 0 };
+        viewport.voi.windowCenter = -500;
+        viewport.voi.windowWidth = 1600;
         //display intial image
-        cornerstone.displayImage(element, image);
+        cornerstone.displayImage(element, image, viewport);
 
         // let viewport = cornerstone.getViewport(element);
         // console.log(viewport);
@@ -169,7 +236,7 @@ export default function CornerstoneAjax(props) {
         window.addEventListener("mouseup", swtichOffCross);
         console.log("mouseup added");
 
-        element.addEventListener("mousemove", handleMouseMoveEvent);
+        window.addEventListener("mousemove", handleMouseMoveEvent);
         console.log("mousemove added");
 
         setLoadTool(true);
@@ -178,7 +245,7 @@ export default function CornerstoneAjax(props) {
 
     return () => {
       if (imageIds.length > 0) {
-        element.removeEventListener("mousemove", handleMouseMoveEvent);
+        window.removeEventListener("mousemove", handleMouseMoveEvent);
         window.removeEventListener("mouseup", swtichOffCross);
         console.log("mousemove removed");
         console.log("mouseup removed");
@@ -233,7 +300,7 @@ export default function CornerstoneAjax(props) {
       const toolState = cornerstoneTools.getToolState(element, "Length");
 
       if (toolState && toolState.data) {
-        console.log(toolState.data);
+        // console.log(toolState.data);
         // Get the currently selected measurement
         toolState.data.forEach((v, i) => {
           if (v.active === true && e.which === 3) {
@@ -295,9 +362,19 @@ export default function CornerstoneAjax(props) {
     if (imageIds.length > 0) {
       if (e.deltaY > 0 && currentImageIdIndex < imageIds.length - 1) {
         setCurrentImageIdIndex(currentImageIdIndex + 1);
+        let displayArr = annoArray.filter(
+          (a) => a.slice === currentImageIdIndex + 1
+        );
+        // console.log(currentImageIdIndex + 1, displayArr);
+        setDisplayArray(displayArr);
       }
       if (e.deltaY < 0 && currentImageIdIndex > 0) {
         setCurrentImageIdIndex(currentImageIdIndex - 1);
+        let displayArr = annoArray.filter(
+          (a) => a.slice === currentImageIdIndex - 1
+        );
+        // console.log(currentImageIdIndex - 1, displayArr);
+        setDisplayArray(displayArr);
       }
     }
 
@@ -385,53 +462,65 @@ export default function CornerstoneAjax(props) {
           </tr>
         </tbody>
       </table>
-      <div
-        ref={canvasRef}
-        className="viewer"
-        onContextMenu={(e) => {
-          e.preventDefault();
-          return false;
-        }}
-        onWheel={scrollSlice}
-        onMouseDown={(e) => {
-          if (e.button === 0 && !isRuler) {
-            setShowCross(true);
-          }
-        }}
-      >
+      <div className="flex-container">
         <div
-          className="crosshair crosshair-y"
-          style={{
-            bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
-            left: `${parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
+          ref={canvasRef}
+          className="viewer"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            return false;
           }}
-        ></div>
-        <div
-          className="crosshair crosshair-y"
-          style={{
-            top: `${crossSpace + parseInt(currentCoord.y)}px`,
-            left: `${parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
+          onWheel={scrollSlice}
+          onMouseDown={(e) => {
+            if (e.button === 0 && !isRuler) {
+              setShowCross(true);
+            }
           }}
-        ></div>
-        <div
-          className="crosshair crosshair-x"
-          style={{
-            top: `${parseInt(currentCoord.y)}px`,
-            right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
-          }}
-        ></div>
-        <div
-          className="crosshair crosshair-x"
-          style={{
-            top: `${parseInt(currentCoord.y)}px`,
-            left: `${crossSpace + parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
-          }}
-        ></div>
+        >
+          <NoduleCanvasArr
+            displayArray={displayArray}
+            imageSize={imageSize}
+            scale={currentViewport.scale}
+            viewX={currentViewport.x}
+            viewY={currentViewport.y}
+            currentId={0}
+          />
+          <div
+            className="crosshair crosshair-y"
+            style={{
+              bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
+              left: `${parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+          <div
+            className="crosshair crosshair-y"
+            style={{
+              top: `${crossSpace + parseInt(currentCoord.y)}px`,
+              left: `${parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+          <div
+            className="crosshair crosshair-x"
+            style={{
+              top: `${parseInt(currentCoord.y)}px`,
+              right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+          <div
+            className="crosshair crosshair-x"
+            style={{
+              top: `${parseInt(currentCoord.y)}px`,
+              left: `${crossSpace + parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+        </div>
+        <CoronalViewer />
       </div>
+
       <div className="dicom-info">
         <button
           type="button"
