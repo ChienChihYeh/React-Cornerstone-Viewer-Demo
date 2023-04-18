@@ -126,9 +126,9 @@ export default function WebImageAjax(props) {
     if (imageIds.length > 0) {
       cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
         cornerstone.enable(element)
-
         //display intial image
         cornerstone.displayImage(element, image)
+        cornerstone.setViewport(element, {scale: 1});
 
         // let viewport = cornerstone.getViewport(element);
         // console.log(viewport);
@@ -330,7 +330,7 @@ export default function WebImageAjax(props) {
           }
         }}
       >
-        <NoduleCanvas
+      {/* { loadTool?<NoduleCanvas
           imageSize={imageSize}
           x={parseInt(noduleCoord.x)}
           y={parseInt(noduleCoord.y)}
@@ -338,8 +338,9 @@ export default function WebImageAjax(props) {
           scale={currentViewport.scale}
           viewX={currentViewport.x}
           viewY={currentViewport.y}
-        />
-        {/* <div
+        /> :""} */}
+        
+        <div
           className="circle"
           style={{
             position: "absolute",
@@ -365,7 +366,7 @@ export default function WebImageAjax(props) {
             transform: "translate(-50%, -50%)",
             borderRadius: "50%",
           }}
-        ></div> */}
+        ></div>
         <div
           className="crosshair crosshair-y"
           style={{
