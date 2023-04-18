@@ -1,5 +1,4 @@
 .viewer {
-  margin: auto;
   width: 512px;
   height: 512px;
   position: relative;
@@ -67,4 +66,7 @@ p {
 
 .flex-container {
   display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
 }

@@ -10,6 +10,7 @@ import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import NoduleCanvasArr from "./../components/NoduleCanvasArr";
+import CoronalViewer from "../components/CoronalViewer";
 
 export default function CornerstoneAjax(props) {
   const canvasRef = useRef(null);
@@ -131,15 +132,6 @@ export default function CornerstoneAjax(props) {
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
-      });
-
-    axios
-      .post("http://10.20.19.148:18000/get_file_coronal", formData)
-      .then((response) => {
-        console.log("coronal_image_path", response.data.path);
-      })
-      .catch((error) => {
-        console.error("Error fetching coronal data:", error);
       });
 
     return () => {
@@ -470,61 +462,65 @@ export default function CornerstoneAjax(props) {
           </tr>
         </tbody>
       </table>
-      <div
-        ref={canvasRef}
-        className="viewer"
-        onContextMenu={(e) => {
-          e.preventDefault();
-          return false;
-        }}
-        onWheel={scrollSlice}
-        onMouseDown={(e) => {
-          if (e.button === 0 && !isRuler) {
-            setShowCross(true);
-          }
-        }}
-      >
-        <NoduleCanvasArr
-          displayArray={displayArray}
-          imageSize={imageSize}
-          scale={currentViewport.scale}
-          viewX={currentViewport.x}
-          viewY={currentViewport.y}
-          currentId={0}
-        />
+      <div className="flex-container">
         <div
-          className="crosshair crosshair-y"
-          style={{
-            bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
-            left: `${parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
+          ref={canvasRef}
+          className="viewer"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            return false;
           }}
-        ></div>
-        <div
-          className="crosshair crosshair-y"
-          style={{
-            top: `${crossSpace + parseInt(currentCoord.y)}px`,
-            left: `${parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
+          onWheel={scrollSlice}
+          onMouseDown={(e) => {
+            if (e.button === 0 && !isRuler) {
+              setShowCross(true);
+            }
           }}
-        ></div>
-        <div
-          className="crosshair crosshair-x"
-          style={{
-            top: `${parseInt(currentCoord.y)}px`,
-            right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
-          }}
-        ></div>
-        <div
-          className="crosshair crosshair-x"
-          style={{
-            top: `${parseInt(currentCoord.y)}px`,
-            left: `${crossSpace + parseInt(currentCoord.x)}px`,
-            display: `${showCross ? "block" : "none"}`,
-          }}
-        ></div>
+        >
+          <NoduleCanvasArr
+            displayArray={displayArray}
+            imageSize={imageSize}
+            scale={currentViewport.scale}
+            viewX={currentViewport.x}
+            viewY={currentViewport.y}
+            currentId={0}
+          />
+          <div
+            className="crosshair crosshair-y"
+            style={{
+              bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
+              left: `${parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+          <div
+            className="crosshair crosshair-y"
+            style={{
+              top: `${crossSpace + parseInt(currentCoord.y)}px`,
+              left: `${parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+          <div
+            className="crosshair crosshair-x"
+            style={{
+              top: `${parseInt(currentCoord.y)}px`,
+              right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+          <div
+            className="crosshair crosshair-x"
+            style={{
+              top: `${parseInt(currentCoord.y)}px`,
+              left: `${crossSpace + parseInt(currentCoord.x)}px`,
+              display: `${showCross ? "block" : "none"}`,
+            }}
+          ></div>
+        </div>
+        <CoronalViewer />
       </div>
+
       <div className="dicom-info">
         <button
           type="button"
