@@ -8,15 +8,9 @@ import "./../styles/styles.scss"
 import { ZoomTool, LengthTool } from "cornerstone-tools"
 import axios from "axios"
 import { Link } from "react-router-dom"
-import NoduleCanvas from "./../components/NoduleCanvas"
 
-export default function WebImageAjax(props) {
+export default function AnnotationSample(props) {
   const canvasRef = useRef(null)
-  const [noduleCoord, setNoduleCoord] = useState({
-    x: 0,
-    y: 0,
-    size: 50,
-  })
   const [imageIds, setImageIds] = useState([])
   const [loadTool, setLoadTool] = useState(false)
   const [currentImageIdIndex, setCurrentImageIdIndex] = useState(0)
@@ -78,32 +72,32 @@ export default function WebImageAjax(props) {
     const element = canvasRef.current
 
     const handleMouseMoveEvent = (e) => {
-      let viewport = cornerstone.getViewport(element)
-      let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY)
-
-      //each viewport must reference unique element else you get wrong coordinates
-      let rect = element.getBoundingClientRect()
-      let x = e.pageX - rect.left
-      let y = e.pageY - rect.top
-
-      setCurrentViewport({
-        scale: viewport.scale,
-        x: viewport.translation.x,
-        y: viewport.translation.y,
-      })
-
-      setCurrentCoord({
-        x: x.toFixed(2),
-        y: y.toFixed(2),
-      })
-
-      setCurrentImgCoord({
-        x: imagePoint.x.toFixed(2),
-        y: imagePoint.y.toFixed(2),
-      })
+        let viewport = cornerstone.getViewport(element)
+        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY)
+  
+        //each viewport must reference unique element else you get wrong coordinates
+        let rect = element.getBoundingClientRect()
+        let x = e.pageX - rect.left
+        let y = e.pageY - rect.top
+  
+        setCurrentViewport({
+          scale: viewport.scale,
+          x: viewport.translation.x,
+          y: viewport.translation.y,
+        })
+  
+        setCurrentCoord({
+          x: x.toFixed(2),
+          y: y.toFixed(2),
+        })
+  
+        setCurrentImgCoord({
+          x: imagePoint.x.toFixed(2),
+          y: imagePoint.y.toFixed(2),
+        })
     }
 
-    const swtichOffCross = function (e) {
+    const switchOffCross = function (e) {
       setShowCross(false)
       let viewport = cornerstone.getViewport(element)
       // console.log(viewport.scale);
@@ -127,14 +121,14 @@ export default function WebImageAjax(props) {
       cornerstone.loadAndCacheImage(imageIds[0]).then((image) => {
         cornerstone.enable(element)
 
-        //display intial image
+        //display initial image
         cornerstone.displayImage(element, image)
 
         // let viewport = cornerstone.getViewport(element);
         // console.log(viewport);
 
         //viewport reset
-        window.addEventListener("mouseup", swtichOffCross)
+        window.addEventListener("mouseup", switchOffCross)
         console.log("mouseup added")
 
         window.addEventListener("mousemove", handleMouseMoveEvent)
@@ -147,7 +141,7 @@ export default function WebImageAjax(props) {
     return () => {
       if (imageIds.length > 0) {
         window.removeEventListener("mousemove", handleMouseMoveEvent)
-        window.removeEventListener("mouseup", swtichOffCross)
+        window.removeEventListener("mouseup", switchOffCross)
         console.log("mousemove removed")
         console.log("mouseup removed")
       }
@@ -295,7 +289,7 @@ export default function WebImageAjax(props) {
 
   return (
     <>
-      <h1>Cornerstone Ajax</h1>
+      <h1>Try Custom Annotation Here</h1>
       <table>
         <thead>
           <tr>
@@ -330,42 +324,6 @@ export default function WebImageAjax(props) {
           }
         }}
       >
-        <NoduleCanvas
-          imageSize={imageSize}
-          x={parseInt(noduleCoord.x)}
-          y={parseInt(noduleCoord.y)}
-          radius={parseInt(noduleCoord.size)}
-          scale={currentViewport.scale}
-          viewX={currentViewport.x}
-          viewY={currentViewport.y}
-        />
-        {/* <div
-          className="circle"
-          style={{
-            position: "absolute",
-            width: `${(
-              (isNaN(noduleCoord.size) ? 50 : parseInt(noduleCoord.size)) *
-              currentViewport.scale
-            ).toFixed(2)}px`,
-            height: `${(
-              (isNaN(noduleCoord.size) ? 50 : parseInt(noduleCoord.size)) *
-              currentViewport.scale
-            ).toFixed(2)}px`,
-            border: "2px solid rgb(0, 255, 0)",
-            top: `${(
-              imageSize / 2 +
-              (currentViewport.y + parseInt(noduleCoord.y)) *
-                currentViewport.scale
-            ).toFixed(2)}px`,
-            left: `${(
-              imageSize / 2 +
-              (currentViewport.x + parseInt(noduleCoord.x)) *
-                currentViewport.scale
-            ).toFixed(2)}px`,
-            transform: "translate(-50%, -50%)",
-            borderRadius: "50%",
-          }}
-        ></div> */}
         <div
           className="crosshair crosshair-y"
           style={{
@@ -413,73 +371,6 @@ export default function WebImageAjax(props) {
         </button>
         <p>
           Slice: {currentImageIdIndex + 1} / {imageIds.length}
-        </p>
-        <p>
-          {"nodule X: "}
-          <input
-            type="text"
-            value={noduleCoord.x}
-            onChange={(e) => {
-              let x = e.target.value
-              setNoduleCoord({
-                ...noduleCoord,
-                x: x,
-              })
-            }}
-            onBlur={(e) => {
-              let x = e.target.value
-              if (isNaN(x) || x === "") {
-                x = 0
-              }
-              setNoduleCoord({
-                ...noduleCoord,
-                x: x,
-              })
-            }}
-          ></input>
-          {" nodule Y: "}
-          <input
-            type="text"
-            value={noduleCoord.y}
-            onChange={(e) => {
-              let y = e.target.value
-              setNoduleCoord({
-                ...noduleCoord,
-                y: y,
-              })
-            }}
-            onBlur={(e) => {
-              let y = e.target.value
-              if (isNaN(y) || y === "") {
-                y = 0
-              }
-              setNoduleCoord({
-                ...noduleCoord,
-                y: y,
-              })
-            }}
-          ></input>
-          {" size: "}
-          <input
-            type="text"
-            value={noduleCoord.size}
-            onChange={(e) => {
-              setNoduleCoord({
-                ...noduleCoord,
-                size: e.target.value,
-              })
-            }}
-            onBlur={(e) => {
-              let y = e.target.value
-              if (isNaN(y) || y === "") {
-                y = 0
-              }
-              setNoduleCoord({
-                ...noduleCoord,
-                y: y,
-              })
-            }}
-          ></input>
         </p>
         <p>Image Link : {imageIds[currentImageIdIndex]}</p>
         <p>

@@ -11,6 +11,7 @@ import CornerstoneAjax from "./pages/CornerstoneAjax";
 import Canvas from "./pages/simpleCanvas";
 import WebImageAjax from "./pages/WebImageAjax";
 import FlaskAjax from "./pages/FlaskAjax";
+import AnnotationSample from "./pages/AnnotationSample";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/cornerstoneajax" element={<CornerstoneAjax />} />
         <Route path="/webajax" element={<WebImageAjax />} />
         <Route path="/flaskajax" element={<FlaskAjax />} />
+        <Route path="/sample" element={<AnnotationSample />} />
       </Routes>
     </BrowserRouter>
   );

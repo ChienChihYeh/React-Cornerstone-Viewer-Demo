@@ -26,6 +26,9 @@ export default function Hello() {
       <Link to="/flaskajax">
         <h3>Flask Ajax: For Flask Only</h3>
       </Link>
+      <Link to="/sample">
+        <h3>Create Your Annotation Here!</h3>
+      </Link>
     </div>
   );
 }
