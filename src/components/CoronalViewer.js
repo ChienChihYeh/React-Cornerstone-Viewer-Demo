@@ -11,7 +11,7 @@ import axios from "axios";
 export default function CoronalViewer({
   axialX,
   axialY,
-  sync,
+  ratio,
   getCoronalCoords,
 }) {
   const [loadTool, setLoadTool] = useState(null);
@@ -106,7 +106,11 @@ export default function CoronalViewer({
         y: imagePoint.y.toFixed(2),
       });
 
-      getCoronalCoords(imagePoint.x.toFixed(2), imagePoint.y.toFixed(2));
+      getCoronalCoords(
+        imagePoint.x.toFixed(2),
+        imagePoint.y.toFixed(2),
+        currentImageIdIndex / pngIds.length
+      );
     };
 
     const handleZoomEvent = (e) => {
@@ -266,7 +270,7 @@ export default function CoronalViewer({
   useEffect(() => {
     // console.log(axialX, axialY, sync);
     let currentSlice = Math.floor((pngIds.length * axialY) / imageSize);
-    console.log(currentSlice);
+    // console.log(currentSlice);
     if (currentSlice <= 0) {
       currentSlice = 0;
       setCurrentImageIdIndex(currentSlice);
@@ -276,7 +280,26 @@ export default function CoronalViewer({
     } else {
       setCurrentImageIdIndex(currentSlice);
     }
+
+    setShowCross(true);
+    setCurrentCoord({
+      x:
+        imageSize / 2 +
+        (currentViewport.x + (axialX / 512) * 570 - imageSize / 2) *
+          currentViewport.scale -
+        26,
+      y: ratio * imageSize,
+    });
+    // console.log("coronal x:" + currentCoord.x);
   }, [axialX, axialY]);
+
+  useEffect(() => {
+    getCoronalCoords(
+      currentImgCoord.x,
+      currentImgCoord.y,
+      currentImageIdIndex / pngIds.length
+    );
+  }, [currentImgCoord]);
 
   return (
     <>

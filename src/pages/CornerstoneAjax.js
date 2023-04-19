@@ -56,6 +56,7 @@ export default function CornerstoneAjax(props) {
   const [coronalImgCoord, setCoronalImgCoord] = useState({
     x: 0,
     y: 0,
+    ratio: 0,
   });
 
   const [annoArray, setAnnoArray] = useState([]);
@@ -217,6 +218,8 @@ export default function CornerstoneAjax(props) {
         let rect = element.getBoundingClientRect();
         let x = e.pageX - rect.left;
         let y = e.pageY - rect.top;
+
+        //TODO: xy should be within 0 < x/y < max
 
         setCurrentCoord({
           x: x.toFixed(2),
@@ -484,9 +487,13 @@ export default function CornerstoneAjax(props) {
     cornerstone.updateImage(element);
   };
 
-  const getCoronalCoords = (x, y) => {
-    // console.log("coronal image coord Y:" + y);
-    let currentSlice = Math.floor((imageIds.length * y) / 570);
+  const getCoronalCoords = (x, y, ratio) => {
+    setCoronalImgCoord({ x: x, y: y, ratio: ratio });
+  };
+
+  useEffect(() => {
+    let currentSlice = Math.floor((imageIds.length * coronalImgCoord.y) / 570);
+    //coronal image size = 570px
     if (currentSlice <= 0) {
       currentSlice = 0;
       setCurrentImageIdIndex(currentSlice);
@@ -496,7 +503,18 @@ export default function CornerstoneAjax(props) {
     } else {
       setCurrentImageIdIndex(currentSlice);
     }
-  };
+
+    if (imageIds.length > 0) {
+      setShowCross(true);
+    }
+    setCurrentCoord({
+      x:
+        imageSize / 2 +
+        (currentViewport.x + (coronalImgCoord.x / 570) * 512 - imageSize / 2) *
+          currentViewport.scale,
+      y: coronalImgCoord.ratio * imageSize,
+    });
+  }, [coronalImgCoord]);
 
   return (
     <>
@@ -580,7 +598,7 @@ export default function CornerstoneAjax(props) {
         <CoronalViewer
           axialX={currentImgCoord.x}
           axialY={currentImgCoord.y}
-          sync={showCross}
+          ratio={currentImageIdIndex / imageIds.length}
           getCoronalCoords={getCoronalCoords}
         />
       </div>
