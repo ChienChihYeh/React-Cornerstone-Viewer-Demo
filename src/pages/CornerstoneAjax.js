@@ -47,10 +47,15 @@ export default function CornerstoneAjax(props) {
     y: 0,
   });
 
-  const [noduleCoord, setNoduleCoord] = useState({
+  // const [noduleCoord, setNoduleCoord] = useState({
+  //   x: 0,
+  //   y: 0,
+  //   size: 50,
+  // });
+
+  const [coronalImgCoord, setCoronalImgCoord] = useState({
     x: 0,
     y: 0,
-    size: 50,
   });
 
   const [annoArray, setAnnoArray] = useState([]);
@@ -479,6 +484,20 @@ export default function CornerstoneAjax(props) {
     cornerstone.updateImage(element);
   };
 
+  const getCoronalCoords = (x, y) => {
+    // console.log("coronal image coord Y:" + y);
+    let currentSlice = Math.floor((imageIds.length * y) / 570);
+    if (currentSlice <= 0) {
+      currentSlice = 0;
+      setCurrentImageIdIndex(currentSlice);
+    } else if (currentSlice > imageIds.length - 1) {
+      currentSlice = imageIds.length - 1;
+      setCurrentImageIdIndex(currentSlice);
+    } else {
+      setCurrentImageIdIndex(currentSlice);
+    }
+  };
+
   return (
     <>
       <h1>Cornerstone Ajax</h1>
@@ -562,6 +581,7 @@ export default function CornerstoneAjax(props) {
           axialX={currentImgCoord.x}
           axialY={currentImgCoord.y}
           sync={showCross}
+          getCoronalCoords={getCoronalCoords}
         />
       </div>
 
@@ -589,6 +609,11 @@ export default function CornerstoneAjax(props) {
           Absolute Coord In Image:
           {" ( " + currentImgCoord.x + " , " + currentImgCoord.y + " )"}
         </p>
+        <p>
+          Absolute Coord In Coronal Image:
+          {" ( " + coronalImgCoord.x + " , " + coronalImgCoord.y + " )"}
+        </p>
+
         <p>Image scale: {currentViewport.scale.toFixed(2)}</p>
         <p>
           Image translation:{" "}

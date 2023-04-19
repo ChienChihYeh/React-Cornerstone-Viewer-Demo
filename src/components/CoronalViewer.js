@@ -8,7 +8,12 @@ import "./../styles/styles.scss";
 import { ZoomTool } from "cornerstone-tools";
 import axios from "axios";
 
-export default function CoronalViewer({ axialX, axialY, sync }) {
+export default function CoronalViewer({
+  axialX,
+  axialY,
+  sync,
+  getCoronalCoords,
+}) {
   const [loadTool, setLoadTool] = useState(null);
 
   const [pngIds, setPngIds] = useState([]);
@@ -100,6 +105,17 @@ export default function CoronalViewer({ axialX, axialY, sync }) {
         x: imagePoint.x.toFixed(2),
         y: imagePoint.y.toFixed(2),
       });
+
+      getCoronalCoords(imagePoint.x.toFixed(2), imagePoint.y.toFixed(2));
+    };
+
+    const handleZoomEvent = (e) => {
+      let viewport = cornerstone.getViewport(element);
+      setCurrentViewport({
+        scale: viewport.scale,
+        x: viewport.translation.x,
+        y: viewport.translation.y,
+      });
     };
 
     const swtichOffCross = function (e) {
@@ -120,6 +136,34 @@ export default function CoronalViewer({ axialX, axialY, sync }) {
           y: 0,
         });
       }
+      window.removeEventListener("mousemove", handleMouseMoveEvent);
+      console.log("coronal mousemove removed");
+    };
+
+    const getCoords = function (e) {
+      // console.log(e.button);
+      if (e.button === 0) {
+        window.addEventListener("mousemove", handleMouseMoveEvent);
+
+        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+
+        //each viewport must reference unique element else you get wrong coordinates
+        let rect = element.getBoundingClientRect();
+        let x = e.pageX - rect.left;
+        let y = e.pageY - rect.top;
+
+        setCurrentCoord({
+          x: x.toFixed(2),
+          y: y.toFixed(2),
+        });
+
+        setCurrentImgCoord({
+          x: imagePoint.x.toFixed(2),
+          y: imagePoint.y.toFixed(2),
+        });
+      }
+
+      console.log("coronal mousemove added");
     };
 
     if (pngIds.length > 0) {
@@ -133,8 +177,10 @@ export default function CoronalViewer({ axialX, axialY, sync }) {
           window.addEventListener("mouseup", swtichOffCross);
           console.log("coronal mouseup added");
 
-          window.addEventListener("mousemove", handleMouseMoveEvent);
+          window.addEventListener("mousemove", handleZoomEvent);
           console.log("coronal mousemove added");
+
+          element.addEventListener("mousedown", getCoords);
 
           setLoadTool(true); // enable
         });
@@ -142,7 +188,9 @@ export default function CoronalViewer({ axialX, axialY, sync }) {
     return () => {
       if (pngIds.length > 0) {
         window.removeEventListener("mouseup", swtichOffCross);
-        window.removeEventListener("mousemove", handleMouseMoveEvent);
+        window.removeEventListener("mousemove", handleZoomEvent);
+        element.removeEventListener("mousedown", getCoords);
+        console.log("coronal mousedown removed");
         console.log("coronal mouseup removed");
         console.log("coronal mousemove removed");
       }
