@@ -216,7 +216,18 @@ export default function CoronalViewer({ axialX, axialY, sync }) {
   };
 
   useEffect(() => {
-    console.log(axialX, axialY, sync);
+    // console.log(axialX, axialY, sync);
+    let currentSlice = Math.floor((pngIds.length * axialY) / imageSize);
+    console.log(currentSlice);
+    if (currentSlice <= 0) {
+      currentSlice = 0;
+      setCurrentImageIdIndex(currentSlice);
+    } else if (currentSlice > pngIds.length - 1) {
+      currentSlice = pngIds.length - 1;
+      setCurrentImageIdIndex(currentSlice);
+    } else {
+      setCurrentImageIdIndex(currentSlice);
+    }
   }, [axialX, axialY]);
 
   return (

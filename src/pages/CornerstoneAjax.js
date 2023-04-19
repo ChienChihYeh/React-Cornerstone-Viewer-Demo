@@ -560,7 +560,7 @@ export default function CornerstoneAjax(props) {
         </div>
         <CoronalViewer
           axialX={currentImgCoord.x}
-          axialY={currentImgCoord.x}
+          axialY={currentImgCoord.y}
           sync={showCross}
         />
       </div>
