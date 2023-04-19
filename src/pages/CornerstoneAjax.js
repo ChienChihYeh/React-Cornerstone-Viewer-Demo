@@ -175,6 +175,15 @@ export default function CornerstoneAjax(props) {
       });
     };
 
+    const handleZoomEvent = (e) => {
+      let viewport = cornerstone.getViewport(element);
+      setCurrentViewport({
+        scale: viewport.scale,
+        x: viewport.translation.x,
+        y: viewport.translation.y,
+      });
+    };
+
     const swtichOffCross = function (e) {
       setShowCross(false);
       let viewport = cornerstone.getViewport(element);
@@ -188,6 +197,34 @@ export default function CornerstoneAjax(props) {
           },
         });
       }
+      window.removeEventListener("mousemove", handleMouseMoveEvent);
+      console.log("mousemove removed");
+    };
+
+    const getCoords = function (e) {
+      // console.log(e.button);
+      if (e.button === 0) {
+        window.addEventListener("mousemove", handleMouseMoveEvent);
+
+        let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
+
+        //each viewport must reference unique element else you get wrong coordinates
+        let rect = element.getBoundingClientRect();
+        let x = e.pageX - rect.left;
+        let y = e.pageY - rect.top;
+
+        setCurrentCoord({
+          x: x.toFixed(2),
+          y: y.toFixed(2),
+        });
+
+        setCurrentImgCoord({
+          x: imagePoint.x.toFixed(2),
+          y: imagePoint.y.toFixed(2),
+        });
+      }
+
+      console.log("mousemove added");
     };
 
     if (imageIds.length > 0) {
@@ -233,11 +270,12 @@ export default function CornerstoneAjax(props) {
         // let viewport = cornerstone.getViewport(element);
         // console.log(viewport);
 
+        window.addEventListener("mousemove", handleZoomEvent);
         window.addEventListener("mouseup", swtichOffCross);
         console.log("mouseup added");
+        console.log("zoom track added");
 
-        window.addEventListener("mousemove", handleMouseMoveEvent);
-        console.log("mousemove added");
+        element.addEventListener("mousedown", getCoords);
 
         setLoadTool(true);
       });
@@ -245,10 +283,12 @@ export default function CornerstoneAjax(props) {
 
     return () => {
       if (imageIds.length > 0) {
-        window.removeEventListener("mousemove", handleMouseMoveEvent);
+        element.removeEventListener("mousedown", getCoords);
         window.removeEventListener("mouseup", swtichOffCross);
-        console.log("mousemove removed");
+        window.removeEventListener("mousemove", handleZoomEvent);
+        console.log("mousedown removed");
         console.log("mouseup removed");
+        console.log("zoom track removed");
       }
     };
   }, [imageIds]);
@@ -518,7 +558,11 @@ export default function CornerstoneAjax(props) {
             }}
           ></div>
         </div>
-        <CoronalViewer />
+        <CoronalViewer
+          axialX={currentImgCoord.x}
+          axialY={currentImgCoord.x}
+          sync={showCross}
+        />
       </div>
 
       <div className="dicom-info">
