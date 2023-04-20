@@ -562,38 +562,45 @@ export default function CornerstoneAjax(props) {
             viewY={currentViewport.y}
             currentId={0}
           />
-          <div
-            className="crosshair crosshair-y"
-            style={{
-              bottom: `${imageSize + crossSpace - parseInt(currentCoord.y)}px`,
-              left: `${parseInt(currentCoord.x)}px`,
-              display: `${showCross ? "block" : "none"}`,
-            }}
-          ></div>
-          <div
-            className="crosshair crosshair-y"
-            style={{
-              top: `${crossSpace + parseInt(currentCoord.y)}px`,
-              left: `${parseInt(currentCoord.x)}px`,
-              display: `${showCross ? "block" : "none"}`,
-            }}
-          ></div>
-          <div
-            className="crosshair crosshair-x"
-            style={{
-              top: `${parseInt(currentCoord.y)}px`,
-              right: `${imageSize + crossSpace - parseInt(currentCoord.x)}px`,
-              display: `${showCross ? "block" : "none"}`,
-            }}
-          ></div>
-          <div
-            className="crosshair crosshair-x"
-            style={{
-              top: `${parseInt(currentCoord.y)}px`,
-              left: `${crossSpace + parseInt(currentCoord.x)}px`,
-              display: `${showCross ? "block" : "none"}`,
-            }}
-          ></div>
+          {showCross ? (
+            <>
+              <div
+                className="crosshair crosshair-y"
+                style={{
+                  bottom: `${
+                    imageSize + crossSpace - parseInt(currentCoord.y)
+                  }px`,
+                  left: `${parseInt(currentCoord.x)}px`,
+                  // display: `${showCross ? "block" : "none"}`,
+                }}
+              ></div>
+              <div
+                className="crosshair crosshair-y"
+                style={{
+                  top: `${crossSpace + parseInt(currentCoord.y)}px`,
+                  left: `${parseInt(currentCoord.x)}px`,
+                }}
+              ></div>
+              <div
+                className="crosshair crosshair-x"
+                style={{
+                  top: `${parseInt(currentCoord.y)}px`,
+                  right: `${
+                    imageSize + crossSpace - parseInt(currentCoord.x)
+                  }px`,
+                }}
+              ></div>
+              <div
+                className="crosshair crosshair-x"
+                style={{
+                  top: `${parseInt(currentCoord.y)}px`,
+                  left: `${crossSpace + parseInt(currentCoord.x)}px`,
+                }}
+              ></div>
+            </>
+          ) : (
+            ""
+          )}
         </div>
         <CoronalViewer
           axialX={currentImgCoord.x}

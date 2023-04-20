@@ -283,7 +283,9 @@ export default function CoronalViewer({
 
     // Math.min(Math.max(x.toFixed(2), 0), 512)
 
-    setShowCross(true);
+    if (loadTool) {
+      setShowCross(true);
+    }
     setCurrentCoord({
       x: Math.min(
         Math.max(
