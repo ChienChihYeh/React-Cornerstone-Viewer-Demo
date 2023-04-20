@@ -97,18 +97,18 @@ export default function CoronalViewer({
       });
 
       setCurrentCoord({
-        x: x.toFixed(2),
-        y: y.toFixed(2),
+        x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
+        y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
       });
 
       setCurrentImgCoord({
-        x: imagePoint.x.toFixed(2),
-        y: imagePoint.y.toFixed(2),
+        x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), 570),
+        y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), 570),
       });
 
       getCoronalCoords(
-        imagePoint.x.toFixed(2),
-        imagePoint.y.toFixed(2),
+        Math.min(Math.max(imagePoint.x.toFixed(2), 0), 570),
+        Math.min(Math.max(imagePoint.y.toFixed(2), 0), 570),
         currentImageIdIndex / pngIds.length
       );
     };
@@ -157,13 +157,13 @@ export default function CoronalViewer({
         let y = e.pageY - rect.top;
 
         setCurrentCoord({
-          x: x.toFixed(2),
-          y: y.toFixed(2),
+          x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
+          y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
         });
 
         setCurrentImgCoord({
-          x: imagePoint.x.toFixed(2),
-          y: imagePoint.y.toFixed(2),
+          x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), 570),
+          y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), 570),
         });
       }
 
@@ -281,14 +281,21 @@ export default function CoronalViewer({
       setCurrentImageIdIndex(currentSlice);
     }
 
+    // Math.min(Math.max(x.toFixed(2), 0), 512)
+
     setShowCross(true);
     setCurrentCoord({
-      x:
-        imageSize / 2 +
-        (currentViewport.x + (axialX / 512) * 570 - imageSize / 2) *
-          currentViewport.scale -
-        26,
-      y: ratio * imageSize,
+      x: Math.min(
+        Math.max(
+          imageSize / 2 +
+            (currentViewport.x + (axialX / 512) * 570 - imageSize / 2) *
+              currentViewport.scale -
+            26,
+          0
+        ),
+        imageSize - 1
+      ),
+      y: Math.min(Math.max(ratio * imageSize, 0), imageSize - 1),
     });
     // console.log("coronal x:" + currentCoord.x);
   }, [axialX, axialY]);

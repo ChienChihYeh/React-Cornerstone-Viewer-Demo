@@ -171,13 +171,13 @@ export default function CornerstoneAjax(props) {
       });
 
       setCurrentCoord({
-        x: x.toFixed(2),
-        y: y.toFixed(2),
+        x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
+        y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
       });
 
       setCurrentImgCoord({
-        x: imagePoint.x.toFixed(2),
-        y: imagePoint.y.toFixed(2),
+        x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), imageSize),
+        y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), imageSize),
       });
     };
 
@@ -222,13 +222,13 @@ export default function CornerstoneAjax(props) {
         //TODO: xy should be within 0 < x/y < max
 
         setCurrentCoord({
-          x: x.toFixed(2),
-          y: y.toFixed(2),
+          x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
+          y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
         });
 
         setCurrentImgCoord({
-          x: imagePoint.x.toFixed(2),
-          y: imagePoint.y.toFixed(2),
+          x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), imageSize),
+          y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), imageSize),
         });
       }
 

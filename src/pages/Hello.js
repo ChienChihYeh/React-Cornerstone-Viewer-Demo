@@ -29,6 +29,9 @@ export default function Hello() {
       <Link to="/sample">
         <h3>Create Your Annotation Here!</h3>
       </Link>
+      {/* <Link to="/range">
+        <h3>Test coordinates range limit</h3>
+      </Link> */}
     </div>
   );
 }
