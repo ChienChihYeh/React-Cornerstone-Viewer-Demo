@@ -7,6 +7,7 @@ import Hammer from "hammerjs/hammer.js";
 import "./../styles/styles.scss";
 import { ZoomTool } from "cornerstone-tools";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 export default function CoronalViewer({
   axialX,
@@ -14,6 +15,8 @@ export default function CoronalViewer({
   ratio,
   getCoronalCoords,
 }) {
+  const { studyDate, patientID, accessionNumber } = useParams();
+
   const [loadTool, setLoadTool] = useState(null);
 
   const [pngIds, setPngIds] = useState([]);
@@ -54,9 +57,12 @@ export default function CoronalViewer({
 
     let formData = new FormData();
     formData.append("mode", "LungRads");
-    formData.append("StudyDate", "20201205");
-    formData.append("PatientID", "17918691");
-    formData.append("AccessionNumber", "3924110977050");
+    formData.append("StudyDate", studyDate ? studyDate : "20201205");
+    formData.append("PatientID", patientID ? patientID : "17918691");
+    formData.append(
+      "AccessionNumber",
+      accessionNumber ? accessionNumber : "3924110977050"
+    );
 
     axios
       .post("http://10.20.19.148:18000/get_file_coronal", formData)

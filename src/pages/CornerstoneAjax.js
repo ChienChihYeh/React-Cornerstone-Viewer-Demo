@@ -8,12 +8,16 @@ import Hammer from "hammerjs";
 import "./../styles/styles.scss";
 import { ZoomTool, LengthTool } from "cornerstone-tools";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import NoduleCanvasArr from "./../components/NoduleCanvasArr";
 import CoronalViewer from "../components/CoronalViewer";
 
 export default function CornerstoneAjax(props) {
   const canvasRef = useRef(null);
+
+  const { studyDate, patientID, accessionNumber } = useParams();
+
+  console.log(studyDate, patientID, accessionNumber);
 
   const [imageIds, setImageIds] = useState([]);
   const [loadTool, setLoadTool] = useState(false);
@@ -90,9 +94,12 @@ export default function CornerstoneAjax(props) {
 
     let formData = new FormData();
     formData.append("mode", "LungRads");
-    formData.append("StudyDate", "20201205");
-    formData.append("PatientID", "17918691");
-    formData.append("AccessionNumber", "3924110977050");
+    formData.append("StudyDate", studyDate ? studyDate : "20201205");
+    formData.append("PatientID", patientID ? patientID : "17918691");
+    formData.append(
+      "AccessionNumber",
+      accessionNumber ? accessionNumber : "3924110977050"
+    );
 
     const getAnnoArray = (data, totalSlice) => {
       // console.log(data);
@@ -512,7 +519,7 @@ export default function CornerstoneAjax(props) {
         imageSize / 2 +
         (currentViewport.x + (coronalImgCoord.x / 570) * 512 - imageSize / 2) *
           currentViewport.scale,
-      y: coronalImgCoord.ratio * imageSize,
+      y: isNaN(coronalImgCoord.ratio) ? 0 : coronalImgCoord.ratio * imageSize,
     });
   }, [coronalImgCoord]);
 
@@ -646,7 +653,7 @@ export default function CornerstoneAjax(props) {
             2
           )} )`}
         </p>
-        <Link to="/">Home</Link>
+        {/* <Link to="/">Home</Link> */}
       </div>
     </>
   );

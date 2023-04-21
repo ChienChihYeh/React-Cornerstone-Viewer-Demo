@@ -32,6 +32,9 @@ export default function Hello() {
       {/* <Link to="/range">
         <h3>Test coordinates range limit</h3>
       </Link> */}
+      <Link to="/list">
+        <h3>Case List</h3>
+      </Link>
     </div>
   );
 }
