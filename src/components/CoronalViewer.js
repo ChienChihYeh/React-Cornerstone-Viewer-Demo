@@ -103,18 +103,18 @@ export default function CoronalViewer({
       });
 
       setCurrentCoord({
-        x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
-        y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
+        x: Math.min(Math.max(x.toFixed(6), 0), imageSize - 1),
+        y: Math.min(Math.max(y.toFixed(6), 0), imageSize - 1),
       });
 
       setCurrentImgCoord({
-        x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), 570),
-        y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), 570),
+        x: Math.min(Math.max(imagePoint.x.toFixed(6), 0), 570),
+        y: Math.min(Math.max(imagePoint.y.toFixed(6), 0), 570),
       });
 
       getCoronalCoords(
-        Math.min(Math.max(imagePoint.x.toFixed(2), 0), 570),
-        Math.min(Math.max(imagePoint.y.toFixed(2), 0), 570),
+        Math.min(Math.max(imagePoint.x.toFixed(6), 0), 570),
+        Math.min(Math.max(imagePoint.y.toFixed(6), 0), 570),
         currentImageIdIndex / pngIds.length
       );
     };
@@ -163,13 +163,13 @@ export default function CoronalViewer({
         let y = e.pageY - rect.top;
 
         setCurrentCoord({
-          x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
-          y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
+          x: Math.min(Math.max(x.toFixed(6), 0), imageSize - 1),
+          y: Math.min(Math.max(y.toFixed(6), 0), imageSize - 1),
         });
 
         setCurrentImgCoord({
-          x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), 570),
-          y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), 570),
+          x: Math.min(Math.max(imagePoint.x.toFixed(6), 0), 570),
+          y: Math.min(Math.max(imagePoint.y.toFixed(6), 0), 570),
         });
       }
 
@@ -287,7 +287,7 @@ export default function CoronalViewer({
       setCurrentImageIdIndex(currentSlice);
     }
 
-    // Math.min(Math.max(x.toFixed(2), 0), 512)
+    // Math.min(Math.max(x.toFixed(6), 0), 512)
 
     if (loadTool) {
       setShowCross(true);

@@ -11,13 +11,14 @@ import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import NoduleCanvasArr from "./../components/NoduleCanvasArr";
 import CoronalViewer from "../components/CoronalViewer";
+import NewNodule from "../components/NewNodule";
 
 export default function CornerstoneAjax(props) {
   const canvasRef = useRef(null);
 
   const { studyDate, patientID, accessionNumber } = useParams();
 
-  console.log(studyDate, patientID, accessionNumber);
+  // console.log(studyDate, patientID, accessionNumber);
 
   const [imageIds, setImageIds] = useState([]);
   const [loadTool, setLoadTool] = useState(false);
@@ -65,6 +66,14 @@ export default function CornerstoneAjax(props) {
 
   const [annoArray, setAnnoArray] = useState([]);
   const [displayArray, setDisplayArray] = useState([]);
+
+  const [newNodule, setNewNodule] = useState({
+    studyDate: "",
+    patientID: "",
+    coord_X: "",
+    coord_Y: "",
+    slice_path: "",
+  });
 
   //settings
   const imageSize = 512;
@@ -178,13 +187,13 @@ export default function CornerstoneAjax(props) {
       });
 
       setCurrentCoord({
-        x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
-        y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
+        x: Math.min(Math.max(x.toFixed(6), 0), imageSize - 1),
+        y: Math.min(Math.max(y.toFixed(6), 0), imageSize - 1),
       });
 
       setCurrentImgCoord({
-        x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), imageSize),
-        y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), imageSize),
+        x: Math.min(Math.max(imagePoint.x.toFixed(6), 0), imageSize),
+        y: Math.min(Math.max(imagePoint.y.toFixed(6), 0), imageSize),
       });
     };
 
@@ -209,6 +218,11 @@ export default function CornerstoneAjax(props) {
             y: 0,
           },
         });
+        setCurrentViewport({
+          scale: 1,
+          x: 0,
+          y: 0,
+        });
       }
       window.removeEventListener("mousemove", handleMouseMoveEvent);
       console.log("mousemove removed");
@@ -226,16 +240,14 @@ export default function CornerstoneAjax(props) {
         let x = e.pageX - rect.left;
         let y = e.pageY - rect.top;
 
-        //TODO: xy should be within 0 < x/y < max
-
         setCurrentCoord({
-          x: Math.min(Math.max(x.toFixed(2), 0), imageSize - 1),
-          y: Math.min(Math.max(y.toFixed(2), 0), imageSize - 1),
+          x: Math.min(Math.max(x.toFixed(6), 0), imageSize - 1),
+          y: Math.min(Math.max(y.toFixed(6), 0), imageSize - 1),
         });
 
         setCurrentImgCoord({
-          x: Math.min(Math.max(imagePoint.x.toFixed(2), 0), imageSize),
-          y: Math.min(Math.max(imagePoint.y.toFixed(2), 0), imageSize),
+          x: Math.min(Math.max(imagePoint.x.toFixed(6), 0), imageSize),
+          y: Math.min(Math.max(imagePoint.y.toFixed(6), 0), imageSize),
         });
       }
 
@@ -560,7 +572,25 @@ export default function CornerstoneAjax(props) {
               setShowCross(true);
             }
           }}
+          onDoubleClick={() => {
+            setNewNodule({
+              studyDate: studyDate,
+              patientID: patientID,
+              coord_X: `${currentImgCoord.x}`,
+              coord_Y: `${currentImgCoord.y}`,
+              slice_path: imageIds[currentImageIdIndex],
+              currentImageIdIndex: currentImageIdIndex,
+            });
+          }}
         >
+          <NewNodule
+            newNodule={newNodule}
+            imageSize={imageSize}
+            scale={currentViewport.scale}
+            viewX={currentViewport.x}
+            viewY={currentViewport.y}
+            currentImageIdIndex={currentImageIdIndex}
+          />
           <NoduleCanvasArr
             displayArray={displayArray}
             imageSize={imageSize}
@@ -646,10 +676,10 @@ export default function CornerstoneAjax(props) {
           {" ( " + coronalImgCoord.x + " , " + coronalImgCoord.y + " )"}
         </p>
 
-        <p>Image scale: {currentViewport.scale.toFixed(2)}</p>
+        <p>Image scale: {currentViewport.scale.toFixed(6)}</p>
         <p>
           Image translation:{" "}
-          {`( ${currentViewport.x.toFixed(2)}, ${currentViewport.y.toFixed(
+          {`( ${currentViewport.x.toFixed(6)}, ${currentViewport.y.toFixed(
             2
           )} )`}
         </p>
