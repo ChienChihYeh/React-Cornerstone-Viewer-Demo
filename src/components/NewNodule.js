@@ -18,7 +18,7 @@ export default function NewNodule({
       viewY * scale
     }px) scale(${scale})`;
 
-    console.log("newNodule scale", scale);
+    // console.log("newNodule scale", scale);
   }, [scale, viewX, viewY]);
 
   useEffect(() => {

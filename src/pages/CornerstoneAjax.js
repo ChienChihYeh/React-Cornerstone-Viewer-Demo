@@ -28,6 +28,8 @@ export default function CornerstoneAjax(props) {
   const [isRuler, setIsRuler] = useState(false);
   const [showCross, setShowCross] = useState(false);
 
+  const crossRef = useRef(false);
+
   //dicom header data
   const [currentCase, setCurrentCase] = useState({
     studyDate: "",
@@ -172,6 +174,9 @@ export default function CornerstoneAjax(props) {
     const element = canvasRef.current;
 
     const handleMouseMoveEvent = (e) => {
+      if (!crossRef.current) {
+        return null;
+      }
       let viewport = cornerstone.getViewport(element);
       let imagePoint = cornerstone.pageToPixel(element, e.pageX, e.pageY);
 
@@ -239,6 +244,10 @@ export default function CornerstoneAjax(props) {
         let rect = element.getBoundingClientRect();
         let x = e.pageX - rect.left;
         let y = e.pageY - rect.top;
+
+        if (!crossRef.current) {
+          return null;
+        }
 
         setCurrentCoord({
           x: Math.min(Math.max(x.toFixed(6), 0), imageSize - 1),
@@ -424,6 +433,10 @@ export default function CornerstoneAjax(props) {
       );
     };
   }, [loadTool]);
+
+  useEffect(() => {
+    crossRef.current = showCross;
+  });
 
   const scrollSlice = (e) => {
     if (imageIds.length > 0) {
