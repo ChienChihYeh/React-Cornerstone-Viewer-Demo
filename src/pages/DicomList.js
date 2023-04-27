@@ -14,6 +14,7 @@ function DicomList() {
   const maxRef = useRef(null);
   const todayRef = useRef(null);
   const yesterdayRef = useRef(null);
+  const resetRef = useRef(null);
   const markedCaseRef = useRef([]);
   const unmarkedCaseRef = useRef([]);
 
@@ -146,6 +147,7 @@ function DicomList() {
     const max = maxRef.current;
     const today = todayRef.current;
     const yesterday = yesterdayRef.current;
+    const reset = resetRef.current;
 
     function TableReload() {
       dataTable.ajax.reload(null, false);
@@ -168,10 +170,18 @@ function DicomList() {
       TableReload();
     }
 
+    function ResetDate() {
+      $(minRef.current, maxRef.current).val("");
+      setMinDate("");
+      setMaxDate("");
+      TableReload();
+    }
+
     min.addEventListener("change", TableReload);
     max.addEventListener("change", TableReload);
     today.addEventListener("click", GetToday);
     yesterday.addEventListener("click", GetYesterday);
+    reset.addEventListener("click", ResetDate);
 
     setInterval(TableReload, 10000);
 
@@ -179,6 +189,7 @@ function DicomList() {
       dataTable.destroy();
       yesterday.removeEventListener("click", GetYesterday);
       today.removeEventListener("click", GetToday);
+      reset.removeEventListener("click", ResetDate);
       min.removeEventListener("change", TableReload);
       max.removeEventListener("change", TableReload);
       clearInterval(TableReload);
@@ -223,6 +234,7 @@ function DicomList() {
           />
           <button ref={todayRef}>Today</button>
           <button ref={yesterdayRef}>Yesterday</button>
+          <button ref={resetRef}>Reset</button>
         </span>
         <table
           ref={tableRef}
