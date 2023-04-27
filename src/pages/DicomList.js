@@ -12,6 +12,8 @@ function DicomList() {
   const tableRef = useRef(null);
   const minRef = useRef(null);
   const maxRef = useRef(null);
+  const todayRef = useRef(null);
+  const yesterdayRef = useRef(null);
   const markedCaseRef = useRef([]);
   const unmarkedCaseRef = useRef([]);
 
@@ -140,20 +142,43 @@ function DicomList() {
       console.log("xhr.dt");
     });
 
+    const min = minRef.current;
+    const max = maxRef.current;
+    const today = todayRef.current;
+    const yesterday = yesterdayRef.current;
+
     function TableReload() {
       dataTable.ajax.reload(null, false);
     }
 
-    const min = minRef.current;
-    const max = maxRef.current;
+    function GetToday() {
+      const dateToday = new Date();
+      const dateTodayISO = dateToday.toISOString().slice(0, 10);
+      $(minRef.current).val(dateTodayISO);
+      setMinDate(dateTodayISO);
+      TableReload();
+    }
+
+    function GetYesterday() {
+      const dateYesterday = new Date();
+      dateYesterday.setDate(dateYesterday.getDate() - 1);
+      const dateYesterdayISO = dateYesterday.toISOString().slice(0, 10);
+      $(minRef.current).val(dateYesterdayISO);
+      setMinDate(dateYesterdayISO);
+      TableReload();
+    }
 
     min.addEventListener("change", TableReload);
     max.addEventListener("change", TableReload);
+    today.addEventListener("click", GetToday);
+    yesterday.addEventListener("click", GetYesterday);
 
     setInterval(TableReload, 10000);
 
     return () => {
       dataTable.destroy();
+      yesterday.removeEventListener("click", GetYesterday);
+      today.removeEventListener("click", GetToday);
       min.removeEventListener("change", TableReload);
       max.removeEventListener("change", TableReload);
       clearInterval(TableReload);
@@ -196,6 +221,8 @@ function DicomList() {
               setMaxDate(e.target.value);
             }}
           />
+          <button ref={todayRef}>Today</button>
+          <button ref={yesterdayRef}>Yesterday</button>
         </span>
         <table
           ref={tableRef}
