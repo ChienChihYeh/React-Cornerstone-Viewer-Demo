@@ -1,3 +1,5 @@
+//this should not be a container for child components
+
 import React, { useEffect, useRef, useState } from "react";
 import $, { error } from "jquery";
 import "datatables.net";
@@ -8,27 +10,16 @@ import "./../styles/styles.scss";
 function DicomList() {
   const [minDate, setMinDate] = useState("");
   const [maxDate, setMaxDate] = useState("");
+  const [isInit, setIsInit] = useState(false);
 
   const tableRef = useRef(null);
   const minRef = useRef(null);
   const maxRef = useRef(null);
-  const todayRef = useRef(null);
-  const yesterdayRef = useRef(null);
-  const resetRef = useRef(null);
   const markedCaseRef = useRef([]);
   const unmarkedCaseRef = useRef([]);
 
   useEffect(() => {
-    // axios
-    //   .post("http://10.20.19.148:18000/checkworkqueue")
-    //   .then((response) => {
-    //     console.log("server response:" + JSON.stringify(response.data));
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error fetching data:", error);
-    //   });
-
-    const dataTable = $(tableRef.current).DataTable({
+    const dataTable = $("#patient-list").DataTable({
       processing: true,
       serverSide: true,
       ajax: {
@@ -62,8 +53,9 @@ function DicomList() {
                   className="mark-case"
                   checked
                 />`;
-            }
-            return `<input type="checkbox" class="mark-case">`;
+            } else if (data === "false") {
+              return `<input type="checkbox" class="mark-case">`;
+            } else return "";
           },
         },
         { title: "Index" },
@@ -88,7 +80,7 @@ function DicomList() {
         { searchable: false, targets: [0, 8] },
         { visible: false, targets: 8 },
       ],
-      order: [[9, "asc"]],
+      order: [[9, "desc"]],
       dom: "<f><t><lp>i",
       initComplete: function () {
         console.log("initComplete");
@@ -96,9 +88,6 @@ function DicomList() {
     });
 
     dataTable.on("click", "tbody tr td", function (e) {
-      // console.log(e.currentTarget); //ok
-      // console.log($(e.currentTarget).index()); //ok
-      // console.log(e.target.type); // ok
       if ($(e.currentTarget).index() === 0) {
         if (e.target.type === "checkbox") {
           console.log("clicked on checkbox"); //ok
@@ -138,63 +127,72 @@ function DicomList() {
       }
     });
 
-    // reload the table data when minDate or maxDate change
     dataTable.on("xhr.dt", function () {
       console.log("xhr.dt");
     });
 
-    const min = minRef.current;
-    const max = maxRef.current;
-    const today = todayRef.current;
-    const yesterday = yesterdayRef.current;
-    const reset = resetRef.current;
-
+    // reload the table data when minDate or maxDate change
     function TableReload() {
       dataTable.ajax.reload(null, false);
     }
 
-    function GetToday() {
-      const dateToday = new Date();
-      const dateTodayISO = dateToday.toISOString().slice(0, 10);
-      $(minRef.current).val(dateTodayISO);
-      setMinDate(dateTodayISO);
-      TableReload();
-    }
-
-    function GetYesterday() {
-      const dateYesterday = new Date();
-      dateYesterday.setDate(dateYesterday.getDate() - 1);
-      const dateYesterdayISO = dateYesterday.toISOString().slice(0, 10);
-      $(minRef.current).val(dateYesterdayISO);
-      setMinDate(dateYesterdayISO);
-      TableReload();
-    }
-
-    function ResetDate() {
-      $(minRef.current, maxRef.current).val("");
-      setMinDate("");
-      setMaxDate("");
-      TableReload();
-    }
-
-    min.addEventListener("change", TableReload);
-    max.addEventListener("change", TableReload);
-    today.addEventListener("click", GetToday);
-    yesterday.addEventListener("click", GetYesterday);
-    reset.addEventListener("click", ResetDate);
-
     setInterval(TableReload, 10000);
+
+    const min = minRef.current;
+    const max = maxRef.current;
+
+    // min.addEventListener("change", TableReload);
+    // max.addEventListener("change", TableReload);
 
     return () => {
       dataTable.destroy();
-      yesterday.removeEventListener("click", GetYesterday);
-      today.removeEventListener("click", GetToday);
-      reset.removeEventListener("click", ResetDate);
-      min.removeEventListener("change", TableReload);
-      max.removeEventListener("change", TableReload);
+      console.log("dataTable destroyed");
       clearInterval(TableReload);
+      // min.removeEventListener("change", TableReload);
+      // max.removeEventListener("change", TableReload);
     };
   }, []);
+
+  function TableReload() {
+    const dataTable = $("#patient-list").DataTable();
+    dataTable.ajax.reload(null, false);
+  }
+
+  // function GetToday(setMinDate, TableReload) {
+  function GetToday() {
+    const dateToday = new Date();
+    const dateTodayISO = dateToday.toISOString().slice(0, 10);
+    $(minRef.current).val(dateTodayISO);
+    setMinDate(dateTodayISO);
+
+    // TableReload();
+  }
+
+  function GetYesterday() {
+    const dateYesterday = new Date();
+    dateYesterday.setDate(dateYesterday.getDate() - 1);
+    const dateYesterdayISO = dateYesterday.toISOString().slice(0, 10);
+    $(minRef.current).val(dateYesterdayISO);
+    setMinDate(dateYesterdayISO);
+
+    // TableReload();
+  }
+
+  function ResetDate() {
+    $(minRef.current, maxRef.current).val("");
+    setMinDate("");
+    setMaxDate("");
+
+    // TableReload();
+  }
+
+  useEffect(() => {
+    if (isInit) {
+      TableReload();
+    } else {
+      setIsInit(true);
+    }
+  }, [minDate, maxDate]);
 
   return (
     <>
@@ -232,13 +230,32 @@ function DicomList() {
               setMaxDate(e.target.value);
             }}
           />
-          <button ref={todayRef}>Today</button>
-          <button ref={yesterdayRef}>Yesterday</button>
-          <button ref={resetRef}>Reset</button>
+          <button
+            onClick={() => {
+              GetToday();
+            }}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => {
+              GetYesterday();
+            }}
+          >
+            Yesterday
+          </button>
+          <button
+            onClick={() => {
+              ResetDate();
+            }}
+          >
+            Reset
+          </button>
         </span>
         <table
           ref={tableRef}
           className="display"
+          id="patient-list"
           style={{ width: "100%" }}
         ></table>
       </div>
