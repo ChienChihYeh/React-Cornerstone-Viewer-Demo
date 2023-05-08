@@ -65,7 +65,7 @@ export default function CoronalViewer({
     );
 
     axios
-      .post("http://10.20.19.148:18000/get_file_coronal", formData)
+      .post("http://192.168.0.11:18000/get_file_coronal", formData)
       .then((response) => {
         // console.log("coronal_image_path", response.data.path);
         response.data.path.sort((a, b) => {

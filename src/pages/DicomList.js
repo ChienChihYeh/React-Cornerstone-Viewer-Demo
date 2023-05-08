@@ -23,7 +23,7 @@ function DicomList() {
       processing: true,
       serverSide: true,
       ajax: {
-        url: "http://10.20.19.148:18000/mongoajax",
+        url: "http://192.168.0.11:18000/mongoajax",
         type: "POST",
         dataSrc: function (json) {
           //Make your callback here.

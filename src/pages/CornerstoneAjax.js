@@ -139,7 +139,7 @@ export default function CornerstoneAjax(props) {
     };
 
     axios
-      .post("http://10.20.19.148:18000/get_file", formData)
+      .post("http://192.168.0.11:18000/get_file", formData)
       .then((response) => {
         // console.log("server response:" + JSON.stringify(response.data));
         // console.log(response.data.path);
@@ -149,7 +149,7 @@ export default function CornerstoneAjax(props) {
         formData.append("slicenum", totalSlice);
 
         axios
-          .post("http://10.20.19.148:18000/read_LungRads_Result", formData)
+          .post("http://192.168.0.11:18000/read_LungRads_Result", formData)
           .then((response) => {
             getAnnoArray(response.data, totalSlice);
           });
